@@ -1,4 +1,4 @@
-# FieldSignal
+# FarmRelay
 React and vanilla CSS browser prototype for crop incident reporting.
 
 ## Run
