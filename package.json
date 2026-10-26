@@ -1,1 +1,17 @@
-{"name":"farmrelay","version":"0.1.0","type":"module","scripts":{"dev":"vite","build":"vite build","preview":"vite preview"},"dependencies":{"react":"^19.0.0","react-dom":"^19.0.0","vite":"^6.0.0"},"devDependencies":{}}
+{
+  "name": "farmrelay",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vite": "^6.0.0"
+  },
+  "devDependencies": {}
+}
