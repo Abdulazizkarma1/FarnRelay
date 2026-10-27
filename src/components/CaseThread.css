@@ -1,0 +1,73 @@
+.case-thread {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 28px;
+  border-radius: 16px;
+  margin: 24px 0;
+}
+.case-thread h2 {
+  margin: 9px 0 0;
+}
+.case-thread label {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.case-thread textarea,
+.case-thread select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ccd6c5;
+  border-radius: 8px;
+  background: #fbfcf8;
+  color: var(--ink);
+}
+.case-thread audio {
+  display: block;
+  width: 100%;
+  margin: 15px 0;
+}
+.audio-evidence {
+  padding: 22px;
+  background: #f4f6ee;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+.audio-evidence > small {
+  display: block;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.thread-timeline {
+  border-left: 2px solid #dce4d1;
+  padding-left: 22px;
+  margin: 25px 0;
+}
+.thread-timeline article {
+  background: #f6f7f2;
+  padding: 16px 20px;
+  margin: 14px 0;
+  border-radius: 0 12px 12px 12px;
+}
+.thread-timeline .officer {
+  background: #edf4e5;
+}
+.thread-timeline span {
+  font-size: 12px;
+  color: #64745b;
+}
+.thread-timeline p,
+.transcript p {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+.transcript {
+  border-top: 1px solid #dce4d1;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.transcript .text-button {
+  display: block;
+  margin-top: 14px;
+}

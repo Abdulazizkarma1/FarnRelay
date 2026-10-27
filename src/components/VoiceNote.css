@@ -1,0 +1,47 @@
+.voice-note {
+  background: #f1f5e9;
+  border: 1px solid #dce5cd;
+  padding: 22px;
+  border-radius: 14px;
+  margin: 22px 0;
+}
+.voice-note h3 {
+  margin: 10px 0;
+}
+.voice-note p,
+.voice-note small {
+  color: #64735b;
+  line-height: 1.6;
+}
+.voice-note audio {
+  display: block;
+  width: 100%;
+  margin: 14px 0;
+}
+.voice-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.record-active {
+  background: #a13626;
+  color: white;
+}
+.voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 45px;
+}
+.voice-wave i {
+  width: 4px;
+  background: #587842;
+  border-radius: 8px;
+  animation: pulse-voice 0.7s infinite alternate;
+}
+@keyframes pulse-voice {
+  to {
+    transform: scaleY(0.4);
+  }
+}

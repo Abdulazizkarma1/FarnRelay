@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import {
+  newReportId,
   crops,
   symptoms,
   prepareImage,
@@ -7,6 +8,7 @@ import {
   evidenceChecks,
 } from "../lib.js";
 import "./ReportForm.css";
+import VoiceNote from "./VoiceNote.jsx";
 export default function ReportForm({ onSave, onCancel }) {
   const [step, setStep] = useState(1);
   const [report, setReport] = useState({
@@ -19,6 +21,7 @@ export default function ReportForm({ onSave, onCancel }) {
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
   const input = useRef(null);
   const change = (key, value) => setReport((r) => ({ ...r, [key]: value }));
   async function photo(file) {
@@ -46,7 +49,7 @@ export default function ReportForm({ onSave, onCancel }) {
     try {
       await onSave({
         ...report,
-        id: crypto.randomUUID(),
+        id: newReportId(),
         createdAt: new Date().toISOString(),
         status: "Needs review",
         sample: false,
@@ -161,6 +164,36 @@ export default function ReportForm({ onSave, onCancel }) {
               </label>
             </>
           )}
+          {step === 1 && (
+            <>
+              <VoiceNote
+                value={report.audioDataUrl}
+                onChange={(v) => change("audioDataUrl", v)}
+                onBusyChange={setVoiceBusy}
+              />
+              {report.audioDataUrl && (
+                <label className="voice-language">
+                  Recording language
+                  <select
+                    value={report.audioLanguage || ""}
+                    required
+                    onChange={(e) => change("audioLanguage", e.target.value)}
+                  >
+                    <option value="">Choose language</option>
+                    {["English", "Twi", "Dagbani", "Hausa", "Other"].map(
+                      (l) => (
+                        <option key={l}>{l}</option>
+                      ),
+                    )}
+                  </select>
+                  <small>
+                    English can be transcribed with Meta. Other languages are
+                    kept for human listening.
+                  </small>
+                </label>
+              )}
+            </>
+          )}
           {step === 2 && (
             <>
               <p className="eyebrow">02 / CONTEXT</p>
@@ -208,7 +241,7 @@ export default function ReportForm({ onSave, onCancel }) {
               <label>
                 Describe what you see
                 <textarea
-                  required
+                  required={!report.audioDataUrl}
                   minLength={10}
                   maxLength={2000}
                   rows={4}
@@ -259,10 +292,12 @@ export default function ReportForm({ onSave, onCancel }) {
                   </li>
                 ))}
               </ul>
+              {report.audioDataUrl && (
+                <audio controls src={report.audioDataUrl} />
+              )}
               <div className="privacy-note">
-                Saved privately in this browser. AI analysis is a separate
-                action that sends your report and attached photo to Meta. No
-                officer has received this report yet.
+                Saved on this device first. Choose Send to extension team on the
+                next screen to share your report, photo and recording.
               </div>
             </>
           )}
@@ -279,12 +314,8 @@ export default function ReportForm({ onSave, onCancel }) {
             >
               {step === 1 ? "Cancel" : "Back"}
             </button>
-            <button className="button primary" disabled={busy}>
-              {busy
-                ? "Working..."
-                : step === 3
-                  ? "Save and open Evidence Lab"
-                  : "Continue"}{" "}
+            <button className="button primary" disabled={busy || voiceBusy}>
+              {busy ? "Working..." : step === 3 ? "Save my report" : "Continue"}{" "}
               <span>↗</span>
             </button>
           </div>

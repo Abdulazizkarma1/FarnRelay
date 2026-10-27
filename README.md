@@ -1,47 +1,80 @@
 # FarmRelay
-A React and vanilla CSS workspace for crop observation evidence and human review.
 
-## Run and deploy
-Use Node 22 or later. Run `npm ci`, then `npm run dev`. Run `npm test` for the core logic tests and `npm run build` for production assets.
+React JavaScript and vanilla CSS for farmer reporting, extension review and Meta AI assistance. Every JSX component has its own CSS file.
 
-Connect this repository to Netlify. Build command: `npm run build`. Publish directory: `dist`. Functions directory: `netlify/functions`. Use `netlify dev` to test server functions locally.
+## Netlify setup
 
-Set `MODEL_API_KEY` in Netlify environment variables. Optionally set `META_MODEL` (default `muse-spark-1.3`). Never prefix the secret with VITE_. Redeploy after configuring the key. No secrets are included in this repository.
+Use Node 22+. Run `npm ci`, `npm test`, and `npm run build`.
 
-## Implemented in v0.2
-- Responsive dashboard with crop photography and reduced-motion-aware transitions.
-- Three-step observation capture with photo upload, resizing and a review checklist.
-- IndexedDB storage for local reports and photos. Old non-sample localStorage reports are imported on first database use.
-- Evidence Lab with explicit user-triggered SAM 3.1 and Muse Spark calls.
-- SAM returned object boxes overlaid on the submitted photo. Pixel masks are counted, not rendered.
-- Muse Spark structured observation brief, missing information and follow-up questions.
-- Visible success, skip and failure states with server-measured API request duration.
-- Weighted report completeness score, explicitly not diagnostic confidence.
-- Grouping by crop, normalised community, symptom and a seven-day window. Closed reports excluded. Synthetic and personal reports never mix.
-- Review status updates and report search/filtering.
+- Build: `npm run build`
+- Publish: `dist`
+- Functions: `netlify/functions`
+- `MODEL_API_KEY`: Meta Model API secret, server-side only.
+- `META_MODEL`: optional, defaults to `muse-spark-1.3`.
+- `OFFICER_ACCESS_KEY`: a random secret of at least 24 characters for the pilot extension team. Do not use the Meta API key here.
+
+Set environment variables for production Functions and redeploy. Never prefix secrets with VITE_. Netlify Blobs uses the site's automatic runtime credentials. No separate database account is needed. Shared submission remains disabled until officer access is configured. Use `netlify dev` for local server functions. Vite alone serves the frontend only.
+
+## Roles and workflow
+
+The homepage has two entrances:
+
+1. **Farmer space**: capture a photo, optional voice note and context; save a local draft; explicitly send to the extension team; check status and read or send replies.
+2. **Extension team**: sign in, review actual submissions, filter the queue, play original audio, request Meta transcription, save a labelled unreviewed transcript, inspect image evidence and send reviewed feedback.
+
+Farmers do not need accounts. Each report has a random 256-bit private token. Its hash is stored server-side. A private recovery code grants access to that report on another device. Anyone with the code can read and reply, so keep it private. It is stored with the local report in IndexedDB and is not put in a URL.
+
+Pilot officers share one access credential. Successful sign-in creates an eight-hour HMAC-signed HttpOnly, Secure, SameSite=Strict cookie. Changing the access key invalidates sessions. This is a pilot team login, not individual staff identity or a full account-management system. Authenticated farmers and officers have distinct reply roles even when both views are used in one browser.
+
+Shared reports use Netlify Blobs with strong consistency. Initial submissions are immutable and retried with the same ID/token to avoid duplicates. Replies and transcripts are separate append-only records. Production uses `farmrelay-live`; deploy previews use `farmrelay-preview`. Protect preview access because previews on the same Netlify site share its storage credentials.
+
+## Voice
+
+Browser MediaRecorder captures up to 30 seconds with playback, replace and remove controls. Supported recording formats depend on the browser. Recording requires HTTPS and microphone permission. Audio is saved locally and is uploaded only when the farmer sends the report.
+
+Officers can request English transcription with `muse-voice-transcribe-1.0` at `/v1/asr/transcribe`. The browser converts the clip to mono 16-bit PCM WAV at 16 kHz before the server sends multipart data to Meta. The server validates the WAV header and duration. A 30-second WAV is approximately 960 KB; the original compressed clip is usually much smaller.
+
+Twi, Dagbani and Hausa are not on Meta's published language list. These recordings remain playable for human listening, with automatic transcription disabled. The app does not claim translation, local-language synthesis or transcription confidence. Transcripts are labelled unreviewed and separate from officer advice. Check the original recording before acting on a transcript.
+
+## Evidence Lab
+
+Muse Spark creates structured observations, unknowns and follow-up questions. SAM 3.1 is connected through the documented Responses API; boxes are rendered when returned, while raster masks are counted but not rendered. On October 27, live Muse text and image calls succeeded; SAM returned upstream HTTP 404. Model access must be verified for the deployed account.
+
+AI output is a review aid, not a diagnosis, pesticide prescription or confirmed outbreak. API errors remain visible. Officer AI analysis stays in the current session. Shared officer replies and explicitly saved transcripts persist on the server. A saved transcript can supply context for a voice-only report.
+
+The separate labelled sample workspace retains the earlier device-local demonstration. It is not the shared officer queue. Synthetic records are never uploaded to the shared queue by that workspace.
+
+## Low connectivity and limitations
+
+- Photo resizing and short compressed recordings reduce upload size.
+- Drafts and private receipt codes persist in IndexedDB. Already-loaded pages can save offline.
+- Sending, checking for feedback and AI requests need internet. Users explicitly retry; there is no automatic background upload.
+- No service worker, offline page reopening, SMS, push alerts or background notifications yet.
+- Feedback is checked through the report page. No guaranteed response time or staffed service is implied.
+- No editing or attachment upload after submission yet. Farmers can add text updates.
+- Clearing browser storage removes local drafts and receipt codes. Save recovery codes separately.
+- Queue listing is suitable for a small pilot. It loads all case summaries and event histories; pagination and institutional scoping are future work.
+- Function-level rate limits are configured for login, shared reports and transcription. Verify Netlify's deployment logs for rule enforcement. Older sample AI endpoints remain public and require further access controls before a broad public launch.
+
+## Tests and verification
+
+`npm test` covers field scoring, report grouping, SAM geometry parsing, request validation, private token authorization, shared reply flow, immutable retry behavior, officer sessions, WAV validation and the transcription adapter with mocked Meta output. These tests do not call paid APIs. Real browser microphone capture and live Meta voice model access still require a supported HTTPS device and configured officer access.
 
 ## Score definition
-Crop identified: 10. Community: 15. Observation date: 15. Specific symptom: 15. Description of at least 25 characters: 20. Own photo: 25. Maximum: 100. This measures field presence only, not photo quality, diagnosis accuracy or disease risk.
 
-## Honest boundaries
-This remains a prototype. Reports are stored in one browser, not in a shared officer database. An already loaded page can save locally while offline, but service-worker offline reopening and server sync are not implemented. There is no authentication or access control. Add authentication, authorization and server-side rate limits before enabling public billable AI access. Voice transcription and local-language speech support are not implemented.
+Crop: 10. Community: 15. Observation date: 15. Specific symptom: 15. Description of at least 25 characters: 20. Own photo: 25. Maximum 100. Field completeness only, not disease risk or model confidence. A recording alone does not award description points. Report groups match crop, community and symptom within seven days; closed and synthetic reports are excluded from the real queue.
 
-No disease diagnosis, pesticide prescription or confirmed outbreak claims are made. Grouping is not geospatial modelling or spread prediction. Meta calls require an eligible key and model access. Live API compatibility still needs verification with deployment credentials; tests use fixtures and do not call paid APIs.
+## Photos
 
-## Images and samples
-Seed records are synthetic and contain no crop photos. The landscape and tomato photographs are illustrative UI assets, never presented as submitted evidence. Illustrative photos are self-hosted as SVG containers embedding the original JPEG data. They are not required for reporting or model analysis.
-Sources:
+Illustrative photos are locally packaged JPEGs embedded in SVG containers. They are never presented as farmer evidence.
+
 - https://images.unsplash.com/photo-1500382017468-9049fed747ef
 - https://images.unsplash.com/photo-1546094096-0df4bcaaa337
 
-## Structure
-- `src/App.jsx` and `src/App.css`: application shell and workspace views.
-- `src/components/ReportForm.jsx` and `.css`: capture wizard.
-- `src/components/EvidenceLab.jsx` and `.css`: model workflow and evidence inspection.
-- `src/lib.js`: storage, scoring, image preparation and grouping.
-- `netlify/functions/`: server-side API adapters. Keys stay here.
-- `tests/core.test.mjs`: scoring, grouping, geometry parsing and input validation.
+## References
 
-## API references
+- https://dev.meta.ai/docs/speech-to-text
+- https://dev.meta.ai/docs/api-reference/voice/transcribe
+- https://dev.meta.ai/docs/api-reference/voice/schemas
 - https://dev.meta.ai/docs/sam/overview
-- https://dev.meta.ai/docs/overview
+- https://docs.netlify.com/build/data-and-storage/netlify-blobs/

@@ -711,10 +711,10 @@ export default function App() {
                   <div>
                     <strong>Voice transcription</strong>
                     <small>
-                      Language support and recording flow still to be built
+                      Available in the farmer and protected officer portals
                     </small>
                   </div>
-                  <span className="pill">Planned</span>
+                  <span className="pill">Officer portal</span>
                 </div>
                 <h3>Connect on Netlify</h3>
                 <ol>
