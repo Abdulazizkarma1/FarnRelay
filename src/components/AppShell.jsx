@@ -1,9 +1,26 @@
+import { subscribeToWorkspace } from "../supabase.js";
+import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
 import { api, navigate } from "../api.js";
 import Icon from "./Icon.jsx";
 import { Badge, ErrorNotice } from "./UI.jsx";
 import "./AppShell.css";
 export default function AppShell({ user, page, onLogout, children }) {
+  const liveVersion = useLiveRefresh();
+  useEffect(() => {
+    let timer;
+    const stop = subscribeToWorkspace(() => {
+      clearTimeout(timer);
+      timer = setTimeout(
+        () => window.dispatchEvent(new Event("farmrelay:data-changed")),
+        250,
+      );
+    });
+    return () => {
+      clearTimeout(timer);
+      stop();
+    };
+  }, [user.id]);
   const [open, setOpen] = useState(false),
     [online, setOnline] = useState(navigator.onLine),
     [unread, setUnread] = useState(0),
@@ -29,7 +46,7 @@ export default function AppShell({ user, page, onLogout, children }) {
     return () => {
       active = false;
     };
-  }, [page]);
+  }, [page, liveVersion]);
   const links = [
     ["dashboard", "grid", "Overview"],
     [

@@ -1,4 +1,4 @@
-name: FarmRelay checks
+name: FarmRelay Supabase checks
 on:
   push:
   pull_request:
@@ -13,12 +13,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            server/package-lock.json
       - run: npm ci
-      - run: npm ci --prefix server
       - run: npm test
-      - run: npm run test:api
       - run: npm run build
-      - run: npm audit --omit=dev --audit-level=high --prefix server
+        env:
+          VITE_SUPABASE_URL: https://test-project.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: public-ci-placeholder
+      - run: npm audit --audit-level=high

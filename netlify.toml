@@ -1,15 +1,15 @@
 [build]
 command = "npm ci && npm run build"
 publish = "dist"
+functions = "netlify/functions"
 [build.environment]
 NODE_VERSION = "22"
-# API_PROXY_TARGET is configured in Netlify, not committed here.
-# scripts/netlify-proxy.mjs generates the API proxy before the SPA fallback.
+[functions]
+node_bundler = "esbuild"
 [[headers]]
 for = "/*"
 [headers.values]
 X-Content-Type-Options = "nosniff"
-Referrer-Policy = "strict-origin-when-cross-origin"
+Referrer-Policy = "no-referrer"
 X-Frame-Options = "DENY"
 Permissions-Policy = "camera=(), geolocation=(), microphone=(self)"
-Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"

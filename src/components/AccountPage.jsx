@@ -8,10 +8,8 @@ export default function AccountPage({ user, onUser, onLogout }) {
     [community, setCommunity] = useState(user.community || ""),
     [current, setCurrent] = useState(""),
     [password, setPassword] = useState(""),
-    [mfaPassword, setMfaPassword] = useState(""),
     [otp, setOtp] = useState(""),
     [enrollment, setEnrollment] = useState(""),
-    [codes, setCodes] = useState([]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState("");
@@ -56,10 +54,9 @@ export default function AccountPage({ user, onUser, onLogout }) {
     await run(async () => {
       const d = await api("/auth/mfa/setup", {
         method: "POST",
-        body: { password: mfaPassword },
+        body: {},
       });
       setEnrollment(d.secret);
-      setMfaPassword("");
     });
   }
   async function confirm(e) {
@@ -72,9 +69,8 @@ export default function AccountPage({ user, onUser, onLogout }) {
       onUser(d.user);
       setEnrollment("");
       setOtp("");
-      setCodes(d.recoveryCodes);
       setMessage(
-        "Authenticator enabled. Save your recovery codes now. They will not be shown again.",
+        "Authenticator enabled. Keep your authenticator backup secure.",
       );
     });
   }
@@ -158,25 +154,8 @@ export default function AccountPage({ user, onUser, onLogout }) {
           </div>
           <p>
             Add a six-digit sign-in code from an authenticator app. Required for
-            administrator access management and assignments.
+            all administrator data access.
           </p>
-          {codes.length > 0 && (
-            <div className="recovery-codes">
-              <h3>Save these recovery codes privately.</h3>
-              <p>
-                Each code works once if you lose your authenticator. Keep them
-                somewhere safe outside this browser.
-              </p>
-              <div>
-                {codes.map((c) => (
-                  <code key={c}>{c}</code>
-                ))}
-              </div>
-              <button className="button outline" onClick={() => setCodes([])}>
-                I have saved my codes
-              </button>
-            </div>
-          )}
           {!user.mfaEnabled &&
             (enrollment ? (
               <form onSubmit={confirm}>
@@ -203,28 +182,17 @@ export default function AccountPage({ user, onUser, onLogout }) {
               </form>
             ) : (
               <form onSubmit={setup}>
-                <label>
-                  Confirm your password
-                  <input
-                    type="password"
-                    required
-                    autoComplete="current-password"
-                    maxLength={128}
-                    value={mfaPassword}
-                    onChange={(e) => setMfaPassword(e.target.value)}
-                  />
-                </label>
                 <button className="button outline" disabled={busy}>
                   Set up authenticator
                 </button>
               </form>
             ))}
-          {user.mfaEnabled && !codes.length && (
+          {user.mfaEnabled && (
             <div className="security-enabled">
               <Icon name="check" />
               <p>
-                Your account requires an authenticator or an unused recovery
-                code at sign-in.
+                Your account requires an authenticator at sign-in. Recovery
+                requires identity verification by the project operator.
               </p>
             </div>
           )}
@@ -270,8 +238,8 @@ export default function AccountPage({ user, onUser, onLogout }) {
             <h2>Session control</h2>
           </div>
           <p>
-            Sessions expire after 30 minutes of inactivity or eight hours.
-            Signing out everywhere revokes all active sessions, including this
+            Supabase manages sign-in sessions. Signing out everywhere also
+            blocks your existing sessions from FarmRelay data, including this
             one.
           </p>
           <button

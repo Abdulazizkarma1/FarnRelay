@@ -1,16 +1,18 @@
+import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
 import { api, navigate } from "../api.js";
 import { PageTitle, ErrorNotice, Loading, Empty, DateText } from "./UI.jsx";
 import Icon from "./Icon.jsx";
 import "./NotificationsPage.css";
 export default function NotificationsPage() {
+  const liveVersion = useLiveRefresh();
   const [data, setData] = useState(null),
     [error, setError] = useState("");
   useEffect(() => {
     api("/notifications")
       .then(setData)
       .catch((e) => setError(e.message));
-  }, []);
+  }, [liveVersion]);
   async function open(n) {
     try {
       await api("/notifications/" + n._id + "/read", { method: "POST" });

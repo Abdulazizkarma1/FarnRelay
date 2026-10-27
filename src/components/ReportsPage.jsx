@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
 import { api, navigate } from "../api.js";
 import { getDrafts, removeDraft, saveDraft, reportPayload } from "../drafts.js";
@@ -58,6 +59,7 @@ export function NewReport({ user, onNotice, initialReport }) {
   );
 }
 export default function ReportsPage({ user, initialQuery = "" }) {
+  const liveVersion = useLiveRefresh();
   const [query, setQuery] = useState(initialQuery),
     [search, setSearch] = useState(initialQuery),
     [status, setStatus] = useState(""),
@@ -88,7 +90,7 @@ export default function ReportsPage({ user, initialQuery = "" }) {
       active = false;
       controller.abort();
     };
-  }, [search, status, page]);
+  }, [search, status, page, liveVersion]);
   return (
     <>
       <PageTitle

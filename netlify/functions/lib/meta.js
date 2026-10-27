@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HttpError } from "../security.js";
+import { HttpError } from "./errors.js";
 const clean = (s) => s.replace(/[\u2013\u2014]/g, ", ").slice(0, 4000);
 const briefSchema = z.object({
   summary: z.string(),

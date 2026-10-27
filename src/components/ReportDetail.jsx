@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useRef, useState } from "react";
 import { api, mediaUrl, navigate } from "../api.js";
 import { recordingToWav } from "../relay.js";
@@ -14,6 +15,7 @@ import {
 } from "./UI.jsx";
 import "./ReportDetail.css";
 export default function ReportDetail({ id, user }) {
+  const liveVersion = useLiveRefresh();
   const [report, setReport] = useState(null),
     [tab, setTab] = useState("evidence"),
     [error, setError] = useState(""),
@@ -61,7 +63,13 @@ export default function ReportDetail({ id, user }) {
   }, [id]);
   useEffect(() => {
     if (tab === "conversation") getMessages().catch((e) => setError(e.message));
-  }, [tab, page, id]);
+  }, [tab, page, id, liveVersion]);
+  useEffect(() => {
+    if (liveVersion > 0)
+      setError(
+        "This workspace received an update. Refresh the report to load the latest review status.",
+      );
+  }, [liveVersion]);
   async function run(task) {
     setBusy(true);
     setError("");
@@ -128,8 +136,10 @@ export default function ReportDetail({ id, user }) {
     setAiError("");
     try {
       let body;
-      if (kind === "transcribe")
+      if (kind === "transcribe") {
+        await api("/reports/" + id);
         body = await recordingToWav(mediaUrl(id, "audio"));
+      }
       const { result } = await api(`/reports/${id}/ai/${kind}`, {
         method: "POST",
         body,

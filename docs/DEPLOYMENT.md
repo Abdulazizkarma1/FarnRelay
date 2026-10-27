@@ -1,71 +1,80 @@
-# Deploy FarmRelay
+# Supabase and Netlify deployment
 
-## 1. Provision the backend
+## 1. Create a staging Supabase project
 
-Create a Railway service from this repository and select the migration branch for staging. Keep the project root as the build context. The repository Dockerfile builds the React assets and installs the API production dependencies. `railway.json` configures `/api/health` as the health check. The process listens on Railway's `PORT` and `0.0.0.0`.
+Use a separate staging project before switching the live frontend. Apply `supabase/migrations/202610270001_farmrelay.sql` through the connected Supabase migration tool or SQL editor. Apply it once, before creating application accounts. It creates the application tables, role checks, private `crop-evidence` bucket, Storage policies, RPCs and Realtime publication entries. Never apply `supabase/tests/platform.sql` to a hosted project; it is a test fixture only.
 
-Provision MongoDB with durable storage, authenticated credentials, backups and monitoring. Use a private Railway connection where available, or a managed MongoDB service with a restricted network policy. Do not expose an unauthenticated MongoDB port.
+Keep Row Level Security enabled. Keep `crop-evidence` private. Do not add broad public policies or expose `app_private` through the Data API. Public registration ignores role metadata and creates farmers only. The browser must never receive a secret/service-role key.
 
-Set Railway variables:
+## 2. Configure Supabase Auth
 
-| Variable           | Value                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------- |
-| `NODE_ENV`         | `production`                                                                                        |
-| `MONGODB_URI`      | Authenticated MongoDB connection URI                                                                |
-| `APP_ORIGIN`       | Exact public frontend origin, such as `https://farmrelay.netlify.app`, without trailing slash       |
-| `APP_SECRET`       | Random secret of at least 32 characters; generate with a password manager or `openssl rand -hex 32` |
-| `SMTP_URL`         | Authenticated SMTP URL from the mail provider; percent-encode credentials                           |
-| `MAIL_FROM`        | Verified sender, such as `FarmRelay <support@your-domain.example>`                                  |
-| `MODEL_API_KEY`    | Meta credential, backend only                                                                       |
-| `META_MODEL`       | `muse-spark-1.3`, or an explicitly tested compatible model                                          |
-| `TRUST_PROXY_HOPS` | Set for the verified proxy path; see below                                                          |
-| `SERVE_WEB`        | `false` when using Netlify, `true` for one-origin Railway hosting                                   |
+Enable email/password accounts and email confirmation. Set a minimum password length of 12 in Auth settings, not just in the frontend. Enable TOTP MFA. Set the Site URL to the exact frontend origin. Add only trusted staging/production redirect origins. Configure your SMTP provider for real delivery and test it; the default mail service is not a production mail setup. Configure Auth rate limits and bot protection for the expected audience.
 
-Never put model, database or SMTP credentials in `VITE_*` variables. Production startup rejects missing mail configuration and non-HTTPS `APP_ORIGIN`. Meta can be unconfigured while the core reporting workflow remains available.
+The app uses token-hash verification links and does not automatically process arbitrary URL sessions. Set these templates in Supabase Auth:
 
-### Proxy trust
+**Confirm signup link:**
 
-Rate limiting uses `req.ip`. Railway and Netlify may each add proxy hops. Inspect the deployed ingress chain in staging and configure only the trusted path length. Do not blindly increase `TRUST_PROXY_HOPS`: trusting attacker-supplied forwarding headers can defeat IP limits. Account and authenticated user limits are also enforced in MongoDB. If a single numeric hop count cannot safely represent all ingress paths, add a provider-specific trusted proxy policy before public launch.
-
-## 2. Connect the Netlify frontend
-
-Set Netlify build variable `API_PROXY_TARGET` to the HTTPS Railway public origin, without a path. The build script generates a forced `/api/*` proxy before the SPA fallback. Configure `APP_ORIGIN` on Railway to the exact Netlify public origin. Keep frontend calls relative to `/api`; do not change them to cross-site fetches.
-
-Netlify build: `npm ci && npm run build`. Publish: `dist`. Node: 22. A Netlify build deliberately fails when `API_PROXY_TARGET` is missing. Deploy previews need their own staging API/origin configuration; the production API does not accept arbitrary preview origins.
-
-Sessions use host-only HttpOnly Secure SameSite=Lax cookies through the public frontend origin. Verify login, cookie forwarding, Origin forwarding, CSRF and logout through the actual Netlify proxy before launch. A successful `/api/health` alone is insufficient.
-
-Alternatively, use Railway for the frontend too: set `SERVE_WEB=true` and `APP_ORIGIN` to the Railway/custom domain origin. The Docker image already contains the frontend build.
-
-## 3. Bootstrap the first administrator
-
-Run in a secure environment with access to the production database:
-
-```sh
-npm run bootstrap --prefix server
+```html
+<a href="{{ .SiteURL }}/#verify?token={{ .TokenHash }}"
+  >Verify your FarmRelay email</a
+>
 ```
 
-Provide `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_NAME`, and `BOOTSTRAP_ADMIN_PASSWORD` through your secret environment. The password must contain at least 12 characters. The script refuses to run when an administrator already exists. It creates a verified admin and an audit entry. Remove bootstrap variables immediately after use.
+**Reset password link:**
 
-Sign in, open Account & security, enable an authenticator, and store the eight recovery codes privately. People & access and assignment require MFA enrollment. Have officers register and verify their email, then promote the appropriate accounts. Do not share an administrator login.
+```html
+<a href="{{ .SiteURL }}/#reset?token={{ .TokenHash }}"
+  >Reset your FarmRelay password</a
+>
+```
 
-## 4. Verify staging before cutover
+These templates are required for the implemented flow. The app consumes the token with `verifyOtp` after the user presses the confirmation button. Fragments are not sent to Netlify in the HTTP request. Never put analytics scripts on these pages.
 
-1. Run CI successfully, including Mongo-backed tests. Use a separate staging database.
-2. Create two farmers, two officers and one administrator. Verify that each farmer sees only their own reports and that officers see only assigned cases, including attachment URLs and conversations.
-3. Submit a real photo and short recording from supported Android and iOS browsers. Check playback, denied microphone permission, failed upload, local draft recovery and retry idempotency.
-4. Test verification, reset, MFA, recovery-code reuse rejection, logout-all and immediate session revocation after suspension.
-5. Assign a case, reply, change status and test two simultaneous reviewers receiving a conflict instead of overwriting changes.
-6. Run paid Meta calls with the deployed key. Confirm actual model access, errors and billing. Verify English transcription against the original recording. SAM access was previously unresolved; do not claim it works until a successful live call.
-7. Confirm headers, proxy behavior, TLS, health checks, graceful restart, backups and a restore into a separate database. Establish uptime/error alerts and budget alerts.
-8. Load-test against expected concurrent usage. The current service uses synchronous model calls with a 45-second upstream timeout, not a background job queue.
+Configure session lifetime and inactivity settings according to the selected Supabase plan. The app does not claim a fixed eight-hour or 30-minute timeout. Account suspension and access changes block existing app sessions immediately through the database profile check; refreshing the same old Supabase session does not undo that revocation.
 
-## 5. Migration and rollback
+## 3. Set Netlify variables
 
-Keep the existing main branch and live prototype intact until staging passes. The previous Netlify Blobs data uses receipt-based access and cannot safely be assigned by matching names. Export and retain a backup, establish verified ownership, and explicitly migrate with an approved mapping if historical records are needed. There is no automatic import in this release.
+Build command: `npm ci && npm run build`. Publish directory: `dist`. Functions directory: `netlify/functions`. Node version: 22. Deploy from the Supabase migration branch for staging.
 
-Switch Netlify to the migration commit only after API configuration and staging checks pass. For rollback, restore the previous frontend commit and its previous Netlify environment. Preserve the new MongoDB database and backups for investigation. Do not delete records to roll back code.
+| Variable                        | Scope             | Purpose                                                                 |
+| ------------------------------- | ----------------- | ----------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`             | Build, public     | Supabase HTTPS project origin                                           |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Build, public     | Publishable key, or legacy anon key                                     |
+| `SUPABASE_URL`                  | Functions         | Same project origin                                                     |
+| `SUPABASE_PUBLISHABLE_KEY`      | Functions         | Same public key                                                         |
+| `SUPABASE_SECRET_KEY`           | Functions, secret | Secret key, or legacy service-role key, for saving validated AI results |
+| `MODEL_API_KEY`                 | Functions, secret | Meta model credential                                                   |
+| `META_MODEL`                    | Functions         | Optional, defaults to `muse-spark-1.3`                                  |
+| `APP_ORIGIN`                    | Functions         | Exact frontend origin, without trailing slash                           |
+
+Remove the old `API_PROXY_TARGET`, `DEV_API_TARGET`, `MONGODB_URI`, `APP_SECRET` and shared officer credentials from this migration's environment. SMTP settings now belong in Supabase, not Netlify.
+
+A rebuild is required after changing public Vite variables. The build generates a CSP allowing only the configured Supabase HTTP/WebSocket origin in addition to this app. A build without public configuration succeeds but displays a configuration error at runtime; this is not a working backend preview. Do not point an untrusted deploy preview at the production database or give it production secrets. Each staging environment must have a matching Auth Site URL and `APP_ORIGIN`.
+
+## 4. Bootstrap the administrator
+
+Register the intended admin through the app and verify email. In `supabase/bootstrap-admin.sql`, replace `REPLACE_WITH_VERIFIED_ADMIN_EMAIL` with that account's exact email, then run it through the Supabase SQL editor. It refuses to create an additional admin if one already exists and records an audit entry.
+
+Sign in again after promotion. The app opens Account & security. Enroll the authenticator; every administrator data action requires an actual `aal2` session. Have extension officers register and verify email, then promote them in People & access. Role changes invalidate their current app sessions, so they must sign in again.
+
+Supabase authenticator recovery is an operator process here. Verify the person's identity before resetting factors through trusted Supabase administration. Never disable MFA merely because someone can name an email address. Keep project-owner account recovery and a documented incident procedure available.
+
+## 5. Staging acceptance
+
+- Sign up and confirm from the real email link. Test expired/reused links, password reset, TOTP, logout and cross-tab state.
+- Use two farmers, two officers and an admin to check reports, conversations, notification ownership and direct Storage access. Check admin access is denied before MFA.
+- Suspend an officer while signed in. Confirm further data and AI requests fail. Reassign their reports separately.
+- Submit a real photo and recording from Android and iOS browsers. Test denied microphone permission, slow upload, retry, local draft recovery and five-minute media-link expiry.
+- Confirm Realtime updates for conversations, report lists and notifications across two browsers. Check unavailable WebSocket behavior; Refresh remains available for report details.
+- Run actual Meta calls. The function uses caller RLS to authorize and download evidence, then a server secret to save results with a second permission check. Confirm model access, billing, function timeout limits and errors. SAM and voice model availability remain unverified until successful live calls.
+- Test backup restoration, account recovery, retention/deletion operations and expected load before collecting real farmer data.
+
+## 6. Cutover and rollback
+
+Merge only after staging works. Deploy the frontend with the corresponding Supabase project and secrets. Existing Netlify Blobs receipt-based reports and the previous Mongo schema do not have an automatic importer. Any import needs a backup and verified account-to-record ownership mapping first.
+
+Rollback code to the prior deployment and its matching environment. Preserve the new database and Storage objects for recovery; do not delete them as part of a code rollback. SQL changes after initial deployment should be new migrations, not edits to an already-applied migration.
 
 ## Maintenance
 
-Configure MongoDB backup retention and test restoration regularly. Monitor database size because photos and audio are stored in report documents with strict size limits. Define a retention and deletion policy before collecting real farmer data. Export/delete workflows require an operator procedure in this release. Reconcile and reassign cases if an officer is suspended. Renew sender/domain settings, rotate credentials carefully, and run dependency updates with the test suite.
+Configure database and object-storage backups separately and prove restoration. Set retention, export/deletion procedures, error monitoring, SMTP alerts, storage quotas and Meta spending limits. Failed uploads can leave unreferenced objects when cleanup cannot run. Clean only objects proven unreferenced by reports, after a grace period and backup. Record bulk operator actions. RLS is access control, not a malware scanner or a diagnostic accuracy guarantee.

@@ -15,13 +15,11 @@ export default function AuthScreen({
       password: "",
       community: "",
       otp: "",
-      recoveryCode: "",
     }),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
-    [mfa, setMfa] = useState(false),
-    [recovery, setRecovery] = useState(false);
+    [mfa, setMfa] = useState(false);
   const change = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const titles = {
     login: "Welcome back.",
@@ -41,11 +39,7 @@ export default function AuthScreen({
         body = {
           email: form.email,
           password: form.password,
-          ...(mfa
-            ? recovery
-              ? { recoveryCode: form.recoveryCode }
-              : { otp: form.otp }
-            : {}),
+          ...(mfa ? { otp: form.otp } : {}),
         };
       else if (mode === "register")
         body = {
@@ -55,7 +49,8 @@ export default function AuthScreen({
           community: form.community,
         };
       else if (mode === "forgot") body = { email: form.email };
-      else if (mode === "reset") body = { token, password: form.password };
+      else if (mode === "reset")
+        body = { token, password: form.password, otp: form.otp };
       else body = { token };
       const result = await api("/auth/" + mode, { method: "POST", body });
       if (result.user) onAuthenticated(result.user);
@@ -137,6 +132,7 @@ export default function AuthScreen({
                   Full name
                   <input
                     required
+                    minLength={2}
                     autoComplete="name"
                     maxLength={100}
                     value={form.name}
@@ -191,30 +187,22 @@ export default function AuthScreen({
               </label>
             )}
             {mfa && (
-              <>
-                <label>
-                  {recovery ? "Recovery code" : "Authenticator code"}
-                  <input
-                    required
-                    inputMode={recovery ? "text" : "numeric"}
-                    autoComplete="one-time-code"
-                    value={recovery ? form.recoveryCode : form.otp}
-                    maxLength={recovery ? 32 : 6}
-                    onChange={(e) =>
-                      change(recovery ? "recoveryCode" : "otp", e.target.value)
-                    }
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => setRecovery(!recovery)}
-                >
-                  {recovery
-                    ? "Use authenticator instead"
-                    : "Use a recovery code"}
-                </button>
-              </>
+              <label>
+                Authenticator code
+                <input
+                  required
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
+                  value={form.otp}
+                  maxLength={6}
+                  onChange={(e) => change("otp", e.target.value)}
+                />
+                <small>
+                  If you have lost your authenticator, contact your platform
+                  administrator for identity-verified recovery.
+                </small>
+              </label>
             )}
             {mode === "login" && (
               <div className="auth-forgot">

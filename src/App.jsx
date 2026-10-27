@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { api, navigate, setCsrf } from "./api.js";
+import { getSupabase } from "./supabase.js";
+import React, { useEffect, useState, lazy, Suspense } from "react";
+import { api, navigate, setCsrf, clearMedia } from "./api.js";
 import AuthScreen from "./components/AuthScreen.jsx";
 import AppShell from "./components/AppShell.jsx";
-import Dashboard from "./components/Dashboard.jsx";
-import ReportsPage, {
-  NewReport,
-  DraftsPage,
-} from "./components/ReportsPage.jsx";
-import ReportDetail from "./components/ReportDetail.jsx";
-import AccountPage from "./components/AccountPage.jsx";
-import AdminPage from "./components/AdminPage.jsx";
-import NotificationsPage from "./components/NotificationsPage.jsx";
+const Dashboard = lazy(() => import("./components/Dashboard.jsx"));
+const ReportsPage = lazy(() => import("./components/ReportsPage.jsx"));
+const NewReport = lazy(() =>
+  import("./components/ReportsPage.jsx").then((m) => ({
+    default: m.NewReport,
+  })),
+);
+const DraftsPage = lazy(() =>
+  import("./components/ReportsPage.jsx").then((m) => ({
+    default: m.DraftsPage,
+  })),
+);
+const ReportDetail = lazy(() => import("./components/ReportDetail.jsx"));
+const AccountPage = lazy(() => import("./components/AccountPage.jsx"));
+const AdminPage = lazy(() => import("./components/AdminPage.jsx"));
+const NotificationsPage = lazy(
+  () => import("./components/NotificationsPage.jsx"),
+);
 import { Loading, ErrorNotice, Empty } from "./components/UI.jsx";
 import "./App.css";
 function route() {
@@ -39,6 +49,8 @@ export default function App() {
     try {
       const data = await api("/auth/me");
       setUser(data.user);
+      if (data.user.role === "admin" && !data.user.mfaEnabled)
+        navigate("account");
     } catch (e) {
       if (e.status !== 401) setConnectionError(e.message);
     } finally {
@@ -47,6 +59,24 @@ export default function App() {
   }
   useEffect(() => {
     boot();
+    let subscription;
+    try {
+      subscription = getSupabase().auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT") {
+          clearMedia();
+          loggedOut();
+        }
+        if (event === "SIGNED_IN")
+          setUser((previous) => {
+            if (previous && previous.id !== session?.user.id) {
+              clearMedia();
+              return null;
+            }
+            return previous;
+          });
+      }).data.subscription;
+    } catch {}
+
     const update = () => {
       setCurrent(route());
       window.scrollTo(0, 0);
@@ -54,6 +84,7 @@ export default function App() {
     window.addEventListener("hashchange", update);
     window.addEventListener("farmrelay:session-expired", loggedOut);
     return () => {
+      subscription?.unsubscribe();
       window.removeEventListener("hashchange", update);
       window.removeEventListener("farmrelay:session-expired", loggedOut);
     };
@@ -61,7 +92,7 @@ export default function App() {
   function authenticated(u) {
     setUser(u);
     setConnectionError("");
-    navigate("dashboard");
+    navigate(u.role === "admin" && !u.mfaEnabled ? "account" : "dashboard");
   }
   const [page, id] = current.path.split("/");
   if (["verify", "reset"].includes(page))
@@ -140,7 +171,9 @@ export default function App() {
           </button>
         </div>
       )}
-      {content}
+      <Suspense fallback={<Loading text="Opening workspace..." />}>
+        {content}
+      </Suspense>
     </AppShell>
   );
 }

@@ -1,33 +1,34 @@
 # Architecture
 
-The browser uses one public origin. `/api` is served by Express directly or proxied from Netlify to Railway. Express validates origin, sessions, CSRF, roles and resource ownership before accessing MongoDB or Meta.
+React on Netlify talks to Supabase Auth, PostgreSQL RPCs, private Storage and Realtime. Meta requests go through a Netlify Function. No Railway service or MongoDB instance is required.
 
-| Role    | Capabilities                                                                                    |
-| ------- | ----------------------------------------------------------------------------------------------- |
-| Farmer  | Own reports and attachments, own conversations, local drafts, own notifications and account     |
-| Officer | Assigned reports and attachments, review status, conversations and Meta assistance              |
-| Admin   | All reports, assignments, users and audit history; access management and assignment require MFA |
+| Layer                 | Responsibility                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| React and vanilla CSS | Dashboards, voice capture, image resizing, local drafts and playback                          |
+| Supabase Auth         | Email verification, passwords, token refresh and authenticator factors                        |
+| PostgreSQL            | Authoritative roles, assignments, sessions checks, reports, messages, notifications and audit |
+| Supabase Storage      | Private bounded photo and audio objects                                                       |
+| Supabase Realtime     | RLS-filtered change events that trigger fresh queries                                         |
+| Netlify Meta Function | Paid model requests and server-authorized result persistence                                  |
 
-Public registration always creates a farmer. Administrator creation is an operator-only bootstrap operation. The API rejects role fields submitted through profile or registration forms. UI navigation reflects permissions, but the API is the authority.
+## Access model
 
-## Data
+Farmers read their own reports. Officers read assigned reports. Administrators read all records only after an actual MFA challenge. Users who have enrolled MFA also need `aal2` for data access. Profiles are authoritative; user-editable auth metadata never controls roles.
 
-Users, sessions, single-use email action tokens, rate counters, reports, conversations, notifications and audit entries are separate collections. Photos and audio are bounded private buffers nested within reports, excluded from normal queries. Media is fetched through the same report scope as the report itself. No public attachment URLs are generated.
+RLS denies direct mutations to public application tables. The exposed `farmrelay_api` function validates the caller and performs allowed mutations in one PostgreSQL transaction. This keeps the primary change, notification and audit entry consistent. Unique UUIDs prevent duplicate reports/messages. Version checks prevent stale reviewer writes.
 
-Reports use a unique account/client UUID for retry idempotency. Conversations use a unique report/client UUID. Status and assignment writes require the current version number. Admin changes revoke active sessions through both deletion and an account version counter.
+The database checks the JWT `session_id` against `auth.sessions` and the user's revocation cutoff. Suspension, demotion and explicit revocation affect already issued access tokens at the data layer. Signed Storage URLs remain bearer capabilities until expiry; they cannot be made unreadable after someone has downloaded their content.
 
-Notifications and audit writes are separate database operations from the primary change. They do not currently use transactions or a durable outbox. A side-effect failure can occur after a primary write succeeds; clients retain idempotency identifiers for retry. A durable outbox and queue are appropriate next steps for higher operational guarantees.
+## AI pipeline
 
-## AI
+The Netlify Function passes the caller's bearer token to a rate-limited database authorization RPC. It downloads private evidence with that caller's permissions, sends the input to Meta and uses a server-only secret to save the result. The save RPC rechecks the actor, session, access version and assignment. Clients cannot write AI results through tables or the service-only save function.
 
-Staff initiate server-side reasoning, segmentation or transcription. The server stores returned model identifiers, timing and results. Reasoning uses submitted context, photo and saved transcript. Segmentation renders only returned boxes. English audio is converted in the browser to mono 16 kHz PCM WAV and validated by the API before forwarding. An authorized reviewer supplies that conversion; it is not a cryptographic proof that the WAV matches the original recording. Preserve the original for comparison.
+Transcription converts the original recording into mono 16 kHz PCM WAV in the browser. The server validates WAV format and size. An authorized reviewer supplies the conversion, so it is not a cryptographic proof of equivalence to the original. Keep the original available for comparison. Only English transcription is enabled; other language recordings need human review.
 
-There are no fabricated model results. Errors remain visible. Automated text is not sent to farmers as officer advice. Officers write their own responses in the conversation.
+## Connectivity and storage
 
-## Connectivity
+Images are resized to 1200 pixels maximum dimension. Audio is short and bounded. Drafts are written to per-account IndexedDB before submission. The storage upload and database insert are separate services; best-effort cleanup removes failed unreferenced uploads, while a restrictive policy protects committed attachments. Periodic orphan cleanup remains an operator task.
 
-Images are resized to a maximum dimension of 1200 pixels. Recordings are short and capped by size. Drafts are saved in IndexedDB under the signed-in account ID before an upload is attempted. They remain on that device until successful submission or explicit deletion. This does not encrypt browser storage or guarantee offline app launch. The browser must already have the app loaded and the account context available.
+Signed photo/audio links last five minutes. Opening or refreshing a report obtains new links. Refreshing before transcription obtains a fresh recording link. Auth sessions use the Supabase browser SDK, including browser storage, rather than HttpOnly custom cookies. Avoid shared browser profiles for sensitive drafts and recordings.
 
-## Interface
-
-Responsive sidebar and mobile menu, role-specific overview, paginated case register, case conversation and AI workbench, notifications, account security and administrator access management. Shared UI primitives use vanilla CSS. Motion respects reduced-motion preferences. Photography is illustrative and never presented as submitted farmer evidence.
+Realtime events refresh lists and conversations. Report details preserve unsaved review edits and show a refresh notice instead of replacing them. Realtime is an enhancement; stored records remain authoritative.

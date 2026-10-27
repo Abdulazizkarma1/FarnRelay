@@ -1,55 +1,48 @@
 # FarmRelay
 
-A MERN crop reporting and extension support workspace. Farmers submit observations and recordings. Assigned officers review evidence, use Meta assistance, and reply. Administrators manage access and assignments.
+A React application for crop observations, voice reports and extension support. Supabase provides authentication, PostgreSQL, private media storage and realtime events. Netlify hosts the frontend and server-side Meta AI functions.
 
-## Stack
+## What is included
 
-- React 19 with JavaScript and matching vanilla CSS files for each JSX component.
-- Express 5 and Node.js 22.12+.
-- MongoDB with Mongoose, private attachments, session storage and audit history.
-- Railway Docker deployment for the API. Netlify can serve the frontend through a same-origin API proxy. Railway can also serve both from one origin.
-- Forest green, warm ivory and amber interface with locally hosted typography and real photographic assets.
+- Farmer, assigned extension officer and administrator workspaces.
+- Database-enforced permissions, authenticated sessions, administrator MFA and audit history.
+- Photos, short recordings, local drafts, conversations, assignments and notifications.
+- Meta evidence briefs, SAM geometry and English transcription with explicit error states.
+- React JavaScript and a matching vanilla CSS file for each JSX component.
 
-## Local development
+## Start locally
 
 ```sh
 npm ci
-npm ci --prefix server
-cp server/.env.example server/.env
-```
-
-Set `MONGODB_URI`, `APP_ORIGIN=http://localhost:5173`, a random `APP_SECRET`, and a development SMTP account in `server/.env`. Start MongoDB independently, then run these in separate terminals:
-
-```sh
-npm run dev:api
+cp .env.example .env.local
 npm run dev
 ```
 
-Registration creates farmer accounts only. Verify email before submitting or reviewing reports. Bootstrap the first admin using the documented CLI, then enable an authenticator and promote verified accounts to officers.
-
-## Checks
+Set the Supabase project URL and publishable key, and apply the database migration first. Vite serves the UI and connects directly to Supabase. Use `npx netlify dev` when testing Meta Functions locally, with server secrets in the local environment. Set `APP_ORIGIN` to the exact local URL used for those requests. Do not commit `.env.local`.
 
 ```sh
 npm test
-node --test server/test/unit.test.js
-npm run test:api
 npm run build
-npm audit --prefix server --omit=dev
+npm audit
 ```
 
-The complete API suite starts an isolated MongoDB through `mongodb-memory-server`. It needs an environment allowed to download and run MongoDB. No real Meta calls or outgoing email are made by tests. GitHub Actions runs the suite on Ubuntu.
+Tests execute the SQL migration and access policies in embedded PostgreSQL using PGlite with test-only Supabase platform contracts. They also exercise Netlify AI authorization and persistence with mocked upstream calls. They do not replace testing the hosted Supabase Auth, Storage and Realtime services.
 
-## Deployment and operation
+## Deploy
 
-Read [deployment](docs/DEPLOYMENT.md), [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md), and [verification status](docs/VERIFICATION.md).
+Follow [DEPLOYMENT.md](docs/DEPLOYMENT.md). Configure Supabase, apply `supabase/migrations/202610270001_farmrelay.sql`, customize the auth email templates, add Netlify variables, and bootstrap the first administrator after verified signup.
 
-This migration replaces the earlier Netlify Functions prototype. Do not merge or switch the live Netlify build until the Railway API, MongoDB, SMTP and origin configuration are ready. Existing prototype receipt codes and reports are not silently imported into authenticated accounts.
+This version replaces the unlaunched MERN migration. Railway, Express, MongoDB, the custom session system and the Netlify API proxy are no longer used. Existing prototype data is not automatically imported. Keep the current live deployment until staging passes.
 
-## Product boundaries
+## Boundaries
 
-- Meta output is labelled as unreviewed assistance. Officers send human feedback separately.
-- Photo completeness is not diagnostic confidence. No fabricated accuracy or outbreak scores.
-- Automatic transcription currently accepts English recordings only. Twi, Dagbani, Hausa and other recordings remain available for human listening.
-- SAM access depends on the Meta account and model availability. Unsupported calls show an error; there is no simulated fallback.
-- Drafts can be saved locally from an already loaded authenticated page. Fresh offline sign-in and a fully offline application are not implemented.
-- This code is a deployment candidate, not a claim of audited or operationally verified production security.
+AI assists a reviewer; it does not confirm plant disease or prescribe pesticides. Only English is enabled for automatic transcription. Other language recordings remain available for human listening. SAM access still requires live verification with the project key.
+
+Drafts work on an already loaded page, not as a complete offline app. Signed media links expire after five minutes; refresh a report if playback has expired. There are no custom one-time MFA recovery codes. See [SECURITY.md](docs/SECURITY.md) and [VERIFICATION.md](docs/VERIFICATION.md) for deployment gates and operational limits.
+
+## Photo attribution
+
+Illustrative photos are locally packaged JPEGs in SVG containers, never farmer evidence:
+
+- https://images.unsplash.com/photo-1500382017468-9049fed747ef
+- https://images.unsplash.com/photo-1546094096-0df4bcaaa337

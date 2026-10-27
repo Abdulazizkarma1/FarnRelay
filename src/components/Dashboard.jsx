@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
 import { api, navigate } from "../api.js";
 import Icon from "./Icon.jsx";
@@ -12,6 +13,7 @@ import {
 } from "./UI.jsx";
 import "./Dashboard.css";
 export default function Dashboard({ user }) {
+  const liveVersion = useLiveRefresh();
   const [data, setData] = useState(null),
     [admin, setAdmin] = useState(null),
     [error, setError] = useState("");
@@ -37,7 +39,7 @@ export default function Dashboard({ user }) {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user, liveVersion]);
   if (!data && !error) return <Loading />;
   const counts = data?.counts || {},
     farmer = user.role === "farmer",
