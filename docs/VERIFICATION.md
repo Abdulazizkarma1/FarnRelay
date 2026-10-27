@@ -10,10 +10,14 @@ Migration work performed on 2026-10-27.
 - Dependency audits: no reported vulnerabilities in frontend dependencies or backend production dependencies at the time of the check.
 - Browser visual inspection of the redesigned interface. Dashboard previews use explicit QA fixture data outside the repository, not a production authentication bypass.
 
-## Not yet verified
+## Verified in GitHub Actions
 
-The full MongoDB integration suite is included but could not execute in this managed workspace. The temporary MongoDB 7.0.24 process exits with `open: Operation not permitted` before connecting. This is not a passing integration result. GitHub Actions runs the suite in an Ubuntu environment; check its actual result before merging.
+[CI run 40510893069](https://github.com/Abdulazizkarma1/FarnRelay/actions/runs/40510893069) passed on commit `92310eb6114278c73bf938e747426428eaae3975`: 2 frontend tests and all 16 backend tests, including 7 MongoDB integration scenarios. The production build and backend dependency audit passed too.
+
+The temporary MongoDB process was blocked in the managed development workspace with `open: Operation not permitted`. The same complete suite subsequently ran successfully in GitHub Actions on Ubuntu; the workspace restriction did not require weakening any controls.
 
 The integration scenarios cover account isolation, private attachments, officer assignment, admin MFA gates, message idempotency, version conflicts, CSRF, origin restrictions, account suspension, session revocation, registration allowlists, verification and reset tokens, authenticator recovery and rate limits. Meta and email are stubbed in these tests.
 
-Railway deployment, a real MongoDB connection, SMTP deliverability, Netlify proxy cookies, real microphone capture, live Meta transcription, SAM availability, load testing, backup restoration and mobile device acceptance tests remain deployment gates. Do not interpret a successful frontend build as proof of those capabilities.
+## Still requiring live deployment verification
+
+Railway deployment, the production MongoDB connection, SMTP deliverability, Netlify proxy cookies, real microphone capture, live Meta transcription, SAM availability, load testing, backup restoration and mobile device acceptance tests remain deployment gates. Do not interpret a successful frontend build as proof of those capabilities.
