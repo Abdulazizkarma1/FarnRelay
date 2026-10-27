@@ -1,0 +1,152 @@
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.account-panel {
+  padding: 28px;
+}
+.account-panel-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 26px;
+  color: #7c9667;
+}
+.account-panel-heading h2 {
+  font-size: 17px;
+  font-weight: 550;
+  letter-spacing: -0.4px;
+  color: #405b34;
+  margin: 0;
+}
+.account-panel-heading .badge {
+  font-size: 8px;
+  margin-left: auto;
+}
+.account-panel label {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+  color: #768968;
+  margin: 20px 0;
+}
+.account-panel input {
+  padding: 13px 15px;
+  border-radius: 8px;
+  border: 1px solid #dce5d1;
+  background: #fcfdf9;
+  color: var(--ink);
+  width: 100%;
+  min-width: 0;
+}
+.account-panel input:disabled {
+  background: #f3f5ed;
+  color: #a0ad92;
+}
+.account-panel label small {
+  font-size: 10px;
+  color: #99a78b;
+}
+.account-panel p {
+  font-size: 12px;
+  line-height: 1.85;
+  color: #899c78;
+}
+.email-verification {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin: -3px 0 25px;
+}
+.email-verification .badge {
+  font-size: 9px;
+}
+.mfa-secret {
+  display: block;
+  background: #eff4e6;
+  padding: 16px;
+  border: 1px dashed #c5d8ae;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+  color: #607e49;
+}
+.security-enabled {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f0f6e9;
+  border-radius: 10px;
+  padding: 18px;
+  color: #8aa76b;
+}
+.security-enabled p {
+  margin: 0;
+}
+.recovery-codes {
+  border: 1px solid #e7d7b1;
+  background: #fdf7e9;
+  border-radius: 10px;
+  padding: 20px;
+}
+.recovery-codes h3 {
+  font-size: 15px;
+  color: #91733a;
+}
+.recovery-codes > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 22px 0;
+}
+.recovery-codes code {
+  font-size: 11px;
+  color: #8d763e;
+  overflow-wrap: anywhere;
+}
+.session-panel > .button {
+  margin-top: 15px;
+}
+.account-storage-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-top: 25px;
+  margin-top: 30px;
+  border-top: 1px solid var(--line);
+  color: #9aae86;
+}
+.account-storage-note p {
+  margin: 0;
+  font-size: 11px;
+}
+@media (max-width: 950px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+  .account-panel {
+    padding: 25px;
+  }
+}
+@media (max-width: 500px) {
+  .account-panel-heading {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .account-panel-heading h2 {
+    font-size: 16px;
+  }
+  .account-panel-heading .badge {
+    font-size: 8px;
+  }
+  .account-panel {
+    padding: 22px;
+  }
+  .email-verification {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}

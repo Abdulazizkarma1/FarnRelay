@@ -9,7 +9,13 @@ import {
 } from "../lib.js";
 import "./ReportForm.css";
 import VoiceNote from "./VoiceNote.jsx";
-export default function ReportForm({ onSave, onCancel }) {
+export default function ReportForm({
+  onSave,
+  onCancel,
+  initialReport,
+  submitLabel = "Submit report",
+  reviewCopy,
+}) {
   const [step, setStep] = useState(1);
   const [report, setReport] = useState({
     crop: "Maize",
@@ -18,6 +24,7 @@ export default function ReportForm({ onSave, onCancel }) {
     onset: new Date().toISOString().slice(0, 10),
     description: "",
     affected: "",
+    ...initialReport,
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -49,7 +56,7 @@ export default function ReportForm({ onSave, onCancel }) {
     try {
       await onSave({
         ...report,
-        id: newReportId(),
+        id: initialReport?.id || newReportId(),
         createdAt: new Date().toISOString(),
         status: "Needs review",
         sample: false,
@@ -296,8 +303,8 @@ export default function ReportForm({ onSave, onCancel }) {
                 <audio controls src={report.audioDataUrl} />
               )}
               <div className="privacy-note">
-                Saved on this device first. Choose Send to extension team on the
-                next screen to share your report, photo and recording.
+                {reviewCopy ||
+                  "Submitting shares your report with authorised extension staff. A local draft is kept if the connection fails."}
               </div>
             </>
           )}
@@ -310,12 +317,13 @@ export default function ReportForm({ onSave, onCancel }) {
             <button
               type="button"
               className="button ghost"
+              disabled={busy || voiceBusy}
               onClick={() => (step === 1 ? onCancel() : setStep(step - 1))}
             >
               {step === 1 ? "Cancel" : "Back"}
             </button>
             <button className="button primary" disabled={busy || voiceBusy}>
-              {busy ? "Working..." : step === 3 ? "Save my report" : "Continue"}{" "}
+              {busy ? "Working..." : step === 3 ? submitLabel : "Continue"}{" "}
               <span>↗</span>
             </button>
           </div>
