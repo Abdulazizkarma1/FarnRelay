@@ -2,13 +2,13 @@
 
 ## 1. Create a staging Supabase project
 
-Use a separate staging project before switching the live frontend. Apply `supabase/migrations/202610270001_farmrelay.sql` through the connected Supabase migration tool or SQL editor. Apply it once, before creating application accounts. It creates the application tables, role checks, private `crop-evidence` bucket, Storage policies, RPCs and Realtime publication entries. Never apply `supabase/tests/platform.sql` to a hosted project; it is a test fixture only.
+Use a separate staging project before switching the live frontend. Apply every SQL file in `supabase/migrations/` in filename order through the connected Supabase migration tool or SQL editor. Apply each migration once and record its version. The base migration creates accounts infrastructure; the investigation migration adds evidence, case events, versioned AI runs and queues. Existing staging projects with the base migration need only the new migration. It creates the application tables, role checks, private `crop-evidence` bucket, Storage policies, RPCs and Realtime publication entries. Never apply `supabase/tests/platform.sql` to a hosted project; it is a test fixture only.
 
 Keep Row Level Security enabled. Keep `crop-evidence` private. Do not add broad public policies or expose `app_private` through the Data API. Public registration ignores role metadata and creates farmers only. The browser must never receive a secret/service-role key.
 
 ## 2. Configure Supabase Auth
 
-Enable email/password accounts and email confirmation. Set a minimum password length of 12 in Auth settings, not just in the frontend. Enable TOTP MFA. Set the Site URL to the exact frontend origin. Add only trusted staging/production redirect origins. Configure your SMTP provider for real delivery and test it; the default mail service is not a production mail setup. Configure Auth rate limits and bot protection for the expected audience.
+Enable email/password accounts and email confirmation. Set a minimum password length of 12 in Auth settings, not just in the frontend. Enable TOTP MFA. Set the Site URL to the exact frontend origin. Add only trusted staging/production redirect origins. Configure custom SMTP and test delivery before signup. New free Supabase projects using default SMTP cannot edit email templates, so custom SMTP is required for the token-hash templates below. The default mail service is not a production mail setup. Configure Auth rate limits and bot protection for the expected audience.
 
 The app uses token-hash verification links and does not automatically process arbitrary URL sessions. Set these templates in Supabase Auth:
 
@@ -34,7 +34,7 @@ Configure session lifetime and inactivity settings according to the selected Sup
 
 ## 3. Set Netlify variables
 
-Build command: `npm ci && npm run build`. Publish directory: `dist`. Functions directory: `netlify/functions`. Node version: 22. Deploy from the Supabase migration branch for staging.
+Build command: `npm ci && npm run build`. Publish directory: `dist`. Functions directory: `netlify/functions`. Node version: 22. Deploy branch `farmrelay-investigation` for staging.
 
 | Variable                        | Scope             | Purpose                                                                 |
 | ------------------------------- | ----------------- | ----------------------------------------------------------------------- |
@@ -77,4 +77,19 @@ Rollback code to the prior deployment and its matching environment. Preserve the
 
 ## Maintenance
 
-Configure database and object-storage backups separately and prove restoration. Set retention, export/deletion procedures, error monitoring, SMTP alerts, storage quotas and Meta spending limits. Failed uploads can leave unreferenced objects when cleanup cannot run. Clean only objects proven unreferenced by reports, after a grace period and backup. Record bulk operator actions. RLS is access control, not a malware scanner or a diagnostic accuracy guarantee.
+Configure database and object-storage backups separately and prove restoration. Set retention, export/deletion procedures, error monitoring, SMTP alerts, storage quotas and Meta spending limits. Failed uploads can leave unreferenced objects when cleanup cannot run. Clean only objects proven unreferenced by reports, after a grace period and backup. Check both legacy report media and `case_evidence`; `app_private.media_referenced(path)` includes both. Record bulk operator actions. RLS is access control, not a malware scanner or a diagnostic accuracy guarantee.
+
+## Migration inventory
+
+- `202610270001_farmrelay.sql`: profiles, roles, reports, messages, notifications, audit, Auth/Storage policies and initial RPCs.
+- `20261030123752_investigation_workflow.sql`: labelled evidence, answers, timeline, follow-up dates/outcomes, versioned analysis, source snapshots and server-filtered queues.
+
+Use Supabase CLI `db push` on a linked staging project or the connected migration tool with the SQL files. Back up existing data first. Never run `supabase/tests/platform.sql` on hosted Supabase. It replaces platform contracts only for embedded tests.
+
+## Offline behavior
+
+The production build generates `sw.js` from its exact asset manifest. It caches app code and fonts, not authenticated requests, reports or recordings. Cold offline authentication is unavailable. Test shell updates on a previously installed version and close/reopen tabs to activate a waiting worker. Device drafts are not a server backup.
+
+## Provider checks
+
+Confirm the configured Meta response model, SAM and voice model are enabled for the project before the demonstration. Model defaults are adapter configuration, not a promise of access. Netlify must allow function duration long enough for the 45-second upstream timeout; the browser waits at most 65 seconds. A shorter host timeout can leave a processing run until the two-minute interruption window permits retry. Set spending controls in the provider account.

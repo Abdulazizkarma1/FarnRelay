@@ -35,6 +35,16 @@ export function subscribeToWorkspace(onChange) {
       { event: "*", schema: "public", table: "messages" },
       onChange,
     )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "case_events" },
+      onChange,
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "ai_runs" },
+      onChange,
+    )
     .subscribe();
   return () => {
     db.removeChannel(channel);

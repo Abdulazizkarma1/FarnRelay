@@ -206,3 +206,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+.queue-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.queue-tabs button {
+  border: 1px solid #d9e0d2;
+  background: white;
+  color: #56684f;
+  border-radius: 24px;
+  padding: 10px 15px;
+  font-size: 12px;
+  min-height: 44px;
+}
+.queue-tabs [aria-pressed="true"] {
+  background: #163d2b;
+  color: white;
+  border-color: #163d2b;
+}

@@ -62,6 +62,7 @@ export default function AppShell({ user, page, onLogout, children }) {
           ["audit", "shield", "Activity log"],
         ]
       : []),
+    ["evaluation", "spark", "Evaluation lab"],
     ["account", "user", "Account & security"],
   ];
   async function logout() {

@@ -1,16 +1,45 @@
-# FarmRelay
+![FarmRelay: A clearer picture. A better next step.](docs/assets/banner.svg)
 
-A React application for crop observations, voice reports and extension support. Supabase provides authentication, PostgreSQL, private media storage and realtime events. Netlify hosts the frontend and server-side Meta AI functions.
+<h1 align="center">FarmRelay</h1>
+<p align="center"><strong>From field observation to a reviewed next step.</strong></p>
+<p align="center">A browser workspace for farmers and extension officers, built for interrupted connections.</p>
+<p align="center"><a href="docs/DEPLOYMENT.md">Deploy</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/EVALUATION.md">Evaluation</a> · <a href="docs/VERIFICATION.md">Verification</a> · <a href="docs/DEMO.md">Demo guide</a></p>
 
-## What is included
+![Checks](https://github.com/Abdulazizkarma1/FarnRelay/actions/workflows/ci.yml/badge.svg?branch=farmrelay-investigation)
+![React](https://img.shields.io/badge/React-JavaScript-286447)
+![CSS](https://img.shields.io/badge/Styling-Vanilla_CSS-286447)
+![Release](https://img.shields.io/badge/Release-3.0.0-286447)
 
-- Farmer, assigned extension officer and administrator workspaces.
-- Database-enforced permissions, authenticated sessions, administrator MFA and audit history.
-- Photos, short recordings, local drafts, conversations, assignments and notifications.
-- Meta evidence briefs, SAM geometry and English transcription with explicit error states.
-- React JavaScript and a matching vanilla CSS file for each JSX component.
+## The problem
 
-## Start locally
+A photograph alone rarely tells an extension officer everything needed to understand a crop concern. The wider plant, when the change started, how widely it appears and the farmer's explanation can be missing. FarmRelay organises that evidence and keeps the response and follow-up in the same case.
+
+The first AI scope is **maize evidence assistance**. Other crop reports can receive human review. This is a working software implementation awaiting hosted integration and field validation, not a validated diagnostic service.
+
+## What's in this build
+
+| Farmer                                     | Extension officer                                 | Administrator                        |
+| ------------------------------------------ | ------------------------------------------------- | ------------------------------------ |
+| Four-step reporting flow                   | Assigned-case workspace                           | Verified account and role management |
+| Labelled photographs and short voice notes | Inspect photographs, compare dates and listen     | Assign and reassign cases            |
+| Device drafts and upload checkpoints       | Meta evidence brief with source links             | Review queues and audit history      |
+| Guided questions and answers               | SAM region overlays and English transcription     | MFA required for data actions        |
+| Reviewed advice and field follow-up        | Ask questions, correct transcripts, record advice | Suspend accounts and revoke access   |
+
+**Shared:** status history, notifications, due queues, evidence versions, private media, analysis history and a local evaluation importer. The public About page includes a clearly labelled interface walkthrough without account creation or AI calls.
+
+## How AI contributes
+
+- **Muse Spark:** proposes missing-evidence questions and a structured officer brief. Every observation must cite an available source. Visible observations must cite photographs actually supplied to the model.
+- **SAM:** returns plant-region geometry displayed over the source image. A region is not a disease finding.
+- **Voice transcription:** produces an explicitly unreviewed English transcript. Twi, Dagbani, Hausa and other recordings remain playable for human listening or translation.
+- **Human review:** officers send advice themselves. AI output is never automatically published as reviewed advice.
+
+Results are tied to an evidence version. New evidence makes old output outdated. Permission and assignment checks run before paid calls and again before saving. Model access, exact provider behavior and costs must be verified with the deployment's credentials.
+
+## Run locally
+
+Requires Node 22.12 or later and npm.
 
 ```sh
 npm ci
@@ -18,31 +47,56 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Set the Supabase project URL and publishable key, and apply the database migration first. Vite serves the UI and connects directly to Supabase. Use `npx netlify dev` when testing Meta Functions locally, with server secrets in the local environment. Set `APP_ORIGIN` to the exact local URL used for those requests. Do not commit `.env.local`.
+Set the public Supabase URL and publishable key in `.env.local`. Apply both migrations in filename order to a staging project. For Meta Functions, run `npx netlify dev` with the server variables from `.env.example`; set `APP_ORIGIN` to that exact local origin. Plain Vite does not serve Netlify Functions.
+
+Without Supabase configuration, the public About page and interface walkthrough still open. Authentication and cloud actions show configuration errors.
 
 ```sh
 npm test
 npm run build
-npm audit
+npm audit --audit-level=high
 ```
 
-Tests execute the SQL migration and access policies in embedded PostgreSQL using PGlite with test-only Supabase platform contracts. They also exercise Netlify AI authorization and persistence with mocked upstream calls. They do not replace testing the hosted Supabase Auth, Storage and Realtime services.
+## Deploy on Netlify and Supabase
 
-## Deploy
+Follow the complete [deployment guide](docs/DEPLOYMENT.md): migrations, SMTP and verification templates, environment variables, administrator bootstrap, MFA and staging acceptance. Railway, Express and MongoDB are not required.
 
-Follow [DEPLOYMENT.md](docs/DEPLOYMENT.md). Configure Supabase, apply `supabase/migrations/202610270001_farmrelay.sql`, customize the auth email templates, add Netlify variables, and bootstrap the first administrator after verified signup.
+**Release status:** local tests and compilation are recorded in [verification](docs/VERIFICATION.md). Hosted Auth, Storage, Realtime, SMTP and real Meta requests remain deployment checks. The existing [prototype](https://farmrelay.netlify.app) may run an earlier build; it is not proof that this branch is deployed.
 
-This version replaces the unlaunched MERN migration. Railway, Express, MongoDB, the custom session system and the Netlify API proxy are no longer used. Existing prototype data is not automatically imported. Keep the current live deployment until staging passes.
+## Project map
 
-## Boundaries
+```text
+src/components/       React screens, each with a matching CSS file
+src/investigation.js  Case actions, upload checkpoints and AI requests
+src/drafts.js         Per-account IndexedDB drafts
+src/evaluation.js     Reviewed-result metrics with explicit denominators
+netlify/functions/    Server-side Meta adapters and authorisation
+supabase/migrations/  Ordered schema, policies and workflow RPCs
+tests/                PostgreSQL access and function contract tests
+docs/                 Deployment, architecture, evaluation and demo guides
+```
 
-AI assists a reviewer; it does not confirm plant disease or prescribe pesticides. Only English is enabled for automatic transcription. Other language recordings remain available for human listening. SAM access still requires live verification with the project key.
+## Connectivity and privacy
 
-Drafts work on an already loaded page, not as a complete offline app. Signed media links expire after five minutes; refresh a report if playback has expired. There are no custom one-time MFA recovery codes. See [SECURITY.md](docs/SECURITY.md) and [VERIFICATION.md](docs/VERIFICATION.md) for deployment gates and operational limits.
+Photographs are resized and compressed before upload. Completed uploads are checkpointed for retries. The production service worker caches app code, not private reports, media or API responses. An already loaded session can keep device drafts during a dropped connection. A cold offline launch cannot authenticate or load cloud cases. Submission, AI and new advice require connectivity. Drafts are account-filtered but not encrypted on a shared browser.
 
-## Photo attribution
+Signed media links expire after five minutes; Refresh case renews them. Uploads and database writes are separate operations: a partially created case can exist while its attachments are still pending. Device drafts remain until confirmation.
 
-Illustrative photos are locally packaged JPEGs in SVG containers, never farmer evidence:
+## Research and honest measurement
 
-- https://images.unsplash.com/photo-1500382017468-9049fed747ef
-- https://images.unsplash.com/photo-1546094096-0df4bcaaa337
+See [evaluation](docs/EVALUATION.md) for the dataset register, leakage controls and review protocol. No dataset benchmark, disease accuracy, crop-loss reduction or adoption claim is shipped. The evaluation page calculates only imported measurements and labels them unverified.
+
+The business hypothesis is organisation-sponsored access for extension programmes and cooperatives. Payments, tenancy isolation, subscriptions and paid service guarantees are outside this build.
+
+## Contributing and security
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before changes and [SECURITY.md](SECURITY.md) before reporting an issue. Do not publish farmer recordings, private case data or credentials in issues. Documentation uses ordinary hyphens; JSX components use paired vanilla CSS files.
+
+No software licence has been selected by the repository owner. Do not assume public visibility grants reuse rights.
+
+## Photograph attribution
+
+Illustrative photographs are packaged locally as JPEGs inside SVG containers and are never presented as farmer evidence:
+
+- [Landscape photograph](https://images.unsplash.com/photo-1500382017468-9049fed747ef)
+- [Tomato photograph](https://images.unsplash.com/photo-1546094096-0df4bcaaa337)

@@ -1,9 +1,9 @@
 :root {
-  --ink: #20382c;
-  --green: #315b36;
-  --muted: #7c8971;
+  --ink: #17251d;
+  --green: #286447;
+  --muted: #647168;
   --line: #e3e7dc;
-  --surface: #f6f8f1;
+  --surface: #f6f5ef;
   --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-family: "DM Sans", Arial, sans-serif;
   color: var(--ink);
@@ -219,4 +219,23 @@ form textarea {
 a:focus-visible {
   outline: 3px solid #a8bf8d;
   outline-offset: 3px;
+}
+
+.eyebrow {
+  color: #536a49;
+}
+.button.subtle {
+  color: #476137;
+}
+.button {
+  min-height: 44px;
+}
+.button.danger {
+  color: #943b2d;
+}
+button:disabled:hover {
+  transform: none;
+}
+textarea {
+  resize: vertical;
 }

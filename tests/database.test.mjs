@@ -1,6 +1,6 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 let db;
 const ids = {
@@ -33,15 +33,9 @@ before(async () => {
       "utf8",
     ),
   );
-  await db.exec(
-    await readFile(
-      new URL(
-        "../supabase/migrations/202610270001_farmrelay.sql",
-        import.meta.url,
-      ),
-      "utf8",
-    ),
-  );
+  for (const file of (await readdir(new URL('../supabase/migrations/', import.meta.url))).sort()) {
+    await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
+  }
   for (const [name, id] of Object.entries(ids)) {
     await db.query(
       "insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,now())",
@@ -279,6 +273,6 @@ test('anonymous callers have no table or workflow access and public wrappers can
  const rows=(await db.query("select relname,relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'")).rows;
  assert.ok(rows.length>=5);assert.ok(rows.every(r=>r.relrowsecurity));
  const functions=(await db.query("select proname,prosecdef from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and proname like 'farmrelay_%'")).rows;
- assert.equal(functions.length,3);assert.ok(functions.every(f=>!f.prosecdef));
+ assert.ok(functions.length>=6);assert.ok(functions.every(f=>!f.prosecdef));
  await db.exec('set role anon');await assert.rejects(()=>db.query('select * from public.reports'),/permission denied/);await assert.rejects(()=>rpc('/reports'),/permission denied/);
 });

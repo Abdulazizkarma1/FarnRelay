@@ -92,9 +92,34 @@ export async function prepareImage(file) {
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  const photoDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  let photoDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  for (const quality of [0.7, 0.6, 0.5]) {
+    if (photoDataUrl.length * 0.75 <= 320000) break;
+    photoDataUrl = canvas.toDataURL("image/jpeg", quality);
+  }
+  const pixels = canvas
+    .getContext("2d")
+    .getImageData(0, 0, canvas.width, canvas.height).data;
+  let light = 0,
+    count = 0;
+  for (let i = 0; i < pixels.length; i += 64) {
+    light += (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+    count++;
+  }
+  const average = light / count;
+  const quality = {
+    warning:
+      average < 40
+        ? "This photo may be too dark. Consider a brighter view."
+        : average > 235
+          ? "This photo may be overexposed. Consider softer lighting."
+          : canvas.width < 350 || canvas.height < 350
+            ? "This photo is small. A closer, sharper image may help."
+            : "",
+  };
   return {
     photoDataUrl,
+    quality,
     photoWidth: canvas.width,
     photoHeight: canvas.height,
     photoBytes: Math.round((photoDataUrl.split(",")[1].length * 3) / 4),

@@ -1,7 +1,8 @@
 import { useLiveRefresh } from "../useLiveRefresh.js";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { api, navigate } from "../api.js";
-import { getDrafts, removeDraft, saveDraft, reportPayload } from "../drafts.js";
+import { getDrafts, removeDraft, saveDraft } from "../drafts.js";
+import { submitCase, submitEvidenceDraft } from "../investigation.js";
 import ReportForm from "./ReportForm.jsx";
 import Icon from "./Icon.jsx";
 import {
@@ -15,28 +16,28 @@ import {
 } from "./UI.jsx";
 import "./ReportsPage.css";
 export function NewReport({ user, onNotice, initialReport }) {
+  const [progress, setProgress] = useState(null);
+  const persist = useCallback((r) => saveDraft(user.id, r), [user.id]);
   async function save(r) {
     await saveDraft(user.id, r);
     if (!navigator.onLine || !user.verified) {
       onNotice(
-        "Draft saved on this device. Reconnect and verify your account before sending.",
+        "Saved on this device. Reconnect and verify your account before sending.",
       );
       navigate("drafts");
       return;
     }
     try {
-      const { report } = await api("/reports", {
-        method: "POST",
-        body: reportPayload(r),
-      });
+      const id = await submitCase(user.id, r, setProgress);
       await removeDraft(r.id);
       onNotice(
-        "Your report has been submitted. An administrator will assign it for review.",
+        "Case and attachments submitted. You can now request guided questions.",
       );
-      navigate("reports/" + report._id);
+      navigate("reports/" + id);
     } catch (e) {
+      setProgress(null);
       onNotice(
-        "Your draft is saved. It was not confirmed as sent: " + e.message,
+        "Your draft is saved. Retry to reuse completed uploads. " + e.message,
       );
       navigate("drafts");
     }
@@ -50,8 +51,10 @@ export function NewReport({ user, onNotice, initialReport }) {
       />
       <ReportForm
         initialReport={initialReport}
+        onDraft={persist}
+        progress={progress}
         onSave={save}
-        onCancel={() => navigate("reports")}
+        onCancel={() => navigate("drafts")}
         submitLabel="Submit report"
         reviewCopy="Submitting shares this report, photo and recording with authorised extension staff. Meta AI may assist their review. A local draft is kept if the connection fails."
       />
@@ -63,6 +66,7 @@ export default function ReportsPage({ user, initialQuery = "" }) {
   const [query, setQuery] = useState(initialQuery),
     [search, setSearch] = useState(initialQuery),
     [status, setStatus] = useState(""),
+    [queue, setQueue] = useState("all"),
     [page, setPage] = useState(1),
     [data, setData] = useState(null),
     [error, setError] = useState(""),
@@ -74,7 +78,12 @@ export default function ReportsPage({ user, initialQuery = "" }) {
     setError("");
     api(
       "/reports?" +
-        new URLSearchParams({ q: search, page, ...(status ? { status } : {}) }),
+        new URLSearchParams({
+          q: search,
+          page,
+          queue,
+          ...(status ? { status } : {}),
+        }),
       { signal: controller.signal },
     )
       .then((d) => {
@@ -90,7 +99,7 @@ export default function ReportsPage({ user, initialQuery = "" }) {
       active = false;
       controller.abort();
     };
-  }, [search, status, page, liveVersion]);
+  }, [search, status, page, queue, liveVersion]);
   return (
     <>
       <PageTitle
@@ -119,6 +128,26 @@ export default function ReportsPage({ user, initialQuery = "" }) {
           </button>
         )}
       </PageTitle>
+      <div className="queue-tabs" aria-label="Case queues">
+        {[
+          ["all", "All cases"],
+          ["due", "Follow-up due"],
+          ["waiting", "Waiting for information"],
+          ["recent", "Updated in 24h"],
+          ...(user.role === "admin" ? [["unassigned", "Unassigned"]] : []),
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            aria-pressed={queue === value}
+            onClick={() => {
+              setQueue(value);
+              setPage(1);
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <div className="report-controls">
         <form
           onSubmit={(e) => {
@@ -185,6 +214,10 @@ export default function ReportsPage({ user, initialQuery = "" }) {
                     <small>
                       {r.symptom} · <DateText value={r.createdAt} />
                     </small>
+                    {r.followupDue && <small>Follow-up: {r.followupDue}</small>}
+                    {r.evidenceCount > 0 && (
+                      <small>{r.evidenceCount} evidence attachments</small>
+                    )}
                     {r.audio?.bytes > 0 && (
                       <em>
                         <Icon name="mic" size={11} />
@@ -271,8 +304,15 @@ export function DraftsPage({ user, onNotice }) {
         <div className="draft-grid">
           {drafts.map((r) => (
             <article className="draft-card" key={r.id}>
-              {r.photoDataUrl && (
-                <img src={r.photoDataUrl} alt="Draft crop photograph" />
+              {(r.evidence?.find((e) => e.kind === "photo")?.dataUrl ||
+                r.photoDataUrl) && (
+                <img
+                  src={
+                    r.evidence?.find((e) => e.kind === "photo")?.dataUrl ||
+                    r.photoDataUrl
+                  }
+                  alt="Draft crop photograph"
+                />
               )}
               <div>
                 <Badge tone="amber">Device draft</Badge>
@@ -286,9 +326,23 @@ export function DraftsPage({ user, onNotice }) {
                 <div className="draft-actions">
                   <button
                     className="button primary"
-                    onClick={() => setSelected(r)}
+                    onClick={async () => {
+                      if (r.type !== "attachment" && !r.reportId) {
+                        setSelected(r);
+                        return;
+                      }
+                      try {
+                        if (r.type === "attachment")
+                          await submitEvidenceDraft(user.id, r);
+                        else await submitCase(user.id, r);
+                        await removeDraft(r.id);
+                        navigate("reports/" + r.reportId);
+                      } catch (e) {
+                        setError(e.message);
+                      }
+                    }}
                   >
-                    Review & send
+                    {r.reportId ? "Retry saved submission" : "Review & send"}
                   </button>
                   <button className="button subtle" onClick={() => discard(r)}>
                     Remove

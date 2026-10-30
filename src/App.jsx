@@ -3,6 +3,8 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import { api, navigate, setCsrf, clearMedia } from "./api.js";
 import AuthScreen from "./components/AuthScreen.jsx";
 import AppShell from "./components/AppShell.jsx";
+const AboutPage = lazy(() => import("./components/AboutPage.jsx"));
+const EvaluationPage = lazy(() => import("./components/EvaluationPage.jsx"));
 const Dashboard = lazy(() => import("./components/Dashboard.jsx"));
 const ReportsPage = lazy(() => import("./components/ReportsPage.jsx"));
 const NewReport = lazy(() =>
@@ -15,7 +17,7 @@ const DraftsPage = lazy(() =>
     default: m.DraftsPage,
   })),
 );
-const ReportDetail = lazy(() => import("./components/ReportDetail.jsx"));
+const ReportDetail = lazy(() => import("./components/InvestigationPage.jsx"));
 const AccountPage = lazy(() => import("./components/AccountPage.jsx"));
 const AdminPage = lazy(() => import("./components/AdminPage.jsx"));
 const NotificationsPage = lazy(
@@ -95,6 +97,21 @@ export default function App() {
     navigate(u.role === "admin" && !u.mfaEnabled ? "account" : "dashboard");
   }
   const [page, id] = current.path.split("/");
+  if (page === "about" || (!user && !loading && !location.hash))
+    return (
+      <Suspense fallback={<Loading />}>
+        <AboutPage />
+      </Suspense>
+    );
+  if (page === "evaluation" && !user)
+    return (
+      <main style={{ maxWidth: 1200, margin: "auto", padding: 28 }}>
+        <a href="#about">← About FarmRelay</a>
+        <Suspense fallback={<Loading />}>
+          <EvaluationPage />
+        </Suspense>
+      </main>
+    );
   if (["verify", "reset"].includes(page))
     return (
       <AuthScreen
@@ -130,7 +147,8 @@ export default function App() {
       </>
     );
   let content;
-  if (page === "account")
+  if (page === "evaluation") content = <EvaluationPage />;
+  else if (page === "account")
     content = <AccountPage user={user} onUser={setUser} onLogout={loggedOut} />;
   else if (page === "notifications") content = <NotificationsPage />;
   else if (["users", "audit"].includes(page) && user.role === "admin")
