@@ -81,8 +81,8 @@ Configure database and object-storage backups separately and prove restoration. 
 
 ## Migration inventory
 
-- `202610270001_farmrelay.sql`: profiles, roles, reports, messages, notifications, audit, Auth/Storage policies and initial RPCs.
-- `20261030123752_investigation_workflow.sql`: labelled evidence, answers, timeline, follow-up dates/outcomes, versioned analysis, source snapshots and server-filtered queues.
+- `20261030175537_farmrelay.sql`: profiles, roles, reports, messages, notifications, audit, Auth/Storage policies and initial RPCs.
+- `20261030175601_investigation_workflow.sql`: labelled evidence, answers, timeline, follow-up dates/outcomes, versioned analysis, source snapshots and server-filtered queues.
 
 Use Supabase CLI `db push` on a linked staging project or the connected migration tool with the SQL files. Back up existing data first. Never run `supabase/tests/platform.sql` on hosted Supabase. It replaces platform contracts only for embedded tests.
 
@@ -93,3 +93,5 @@ The production build generates `sw.js` from its exact asset manifest. It caches 
 ## Provider checks
 
 Confirm the configured Meta response model, SAM and voice model are enabled for the project before the demonstration. Model defaults are adapter configuration, not a promise of access. Netlify must allow function duration long enough for the 45-second upstream timeout; the browser waits at most 65 seconds. A shorter host timeout can leave a processing run until the two-minute interruption window permits retry. Set spending controls in the provider account.
+
+The migration filenames match the versions recorded by the connected migration tool on the hosted staging project. Their SQL content is unchanged from the reviewed build. This keeps later CLI migration pushes from trying to recreate the schema.

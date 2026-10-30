@@ -20,9 +20,19 @@ Both ordered SQL migrations execute in PGlite against test-only Supabase Auth/St
 
 Function tests check authorization before paid calls, server-only persistence, structured citations, supplied-photo citations, duplicate questions, malformed WAV/SAM output, upstream failure and superseded-result responses. Meta requests are mocked. Evaluation tests verify coverage, denominators, missing observations, medians and invalid imports.
 
+## Hosted staging checks
+
+The existing FarmRelay project became visible in the connected account after the organisation was confirmed. Both reviewed migrations were applied successfully on 30 October 2026. Their repository filenames now match the migration versions recorded by the connected tool, with SQL content unchanged.
+
+Hosted transactional smoke checks passed for report idempotency, direct role-write denial, farmer isolation, assigned-officer access, admin MFA and rejection of AI persistence after reassignment. All synthetic fixture writes were rolled back; zero users and reports remained afterward. The reusable test is `supabase/tests/hosted-smoke.sql`.
+
+Public HTTP checks passed for denied anonymous table/workflow access and hidden private helper/schema. Email signup is enabled and confirmation is required. These checks did not send email or establish a signed-in Auth session.
+
+All nine application tables have RLS enabled. The crop-evidence bucket is private with a 1,500,000-byte limit and MIME allowlist. Security advisors reported one informational notice for the intentionally inaccessible private rate-limit table. Performance advisors reported unused indexes on the newly created empty database; indexes were retained.
+
 ## Not yet verified
 
-There was no project in the connected Supabase account during implementation. No hosted database migration or live cutover is claimed. Hosted Auth, SMTP email links, Storage HTTP/signed links, Realtime delivery, real microphone capture and actual Meta/SAM/voice calls still need the staging acceptance steps in DEPLOYMENT.md. Field correctness, local-language transcription, farmer adoption and crop outcomes are unmeasured.
+No live frontend cutover is claimed. End-to-end hosted Auth, SMTP email links, Storage HTTP/signed links, Realtime delivery, real microphone capture and actual Meta/SAM/voice calls still need the staging acceptance steps in DEPLOYMENT.md. Field correctness, local-language transcription, farmer adoption and crop outcomes are unmeasured.
 
 The officer screen compiles, but a full hosted multi-account browser walkthrough remains pending. The browser preview became unavailable when resuming the final visual check; no successful officer browser test is claimed.
 

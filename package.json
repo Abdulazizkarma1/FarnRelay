@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build && node scripts/build-config.mjs",
     "preview": "vite preview",
-    "test": "node --test --test-concurrency=1 tests/*.test.mjs"
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "verify:public": "node --env-file=.env.local scripts/verify-public.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "5.3.0",

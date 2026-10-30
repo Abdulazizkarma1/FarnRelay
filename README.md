@@ -61,7 +61,7 @@ npm audit --audit-level=high
 
 Follow the complete [deployment guide](docs/DEPLOYMENT.md): migrations, SMTP and verification templates, environment variables, administrator bootstrap, MFA and staging acceptance. Railway, Express and MongoDB are not required.
 
-**Release status:** local tests and compilation are recorded in [verification](docs/VERIFICATION.md). Hosted Auth, Storage, Realtime, SMTP and real Meta requests remain deployment checks. The existing [prototype](https://farmrelay.netlify.app) may run an earlier build; it is not proof that this branch is deployed.
+**Release status:** local tests and compilation are recorded in [verification](docs/VERIFICATION.md). Both database migrations and transactional hosted SQL smoke checks now pass. End-to-end Auth, Storage, Realtime, SMTP and real Meta requests remain deployment checks. See [staging setup](docs/STAGING.md). The existing [prototype](https://farmrelay.netlify.app) may run an earlier build; it is not proof that this branch is deployed.
 
 ## Project map
 
