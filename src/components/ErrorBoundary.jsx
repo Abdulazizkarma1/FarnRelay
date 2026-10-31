@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import React from "react";
 import "./ErrorBoundary.css";
 export default class ErrorBoundary extends React.Component {
@@ -9,13 +10,10 @@ export default class ErrorBoundary extends React.Component {
     if (this.state.failed)
       return (
         <main className="fatal-error">
-          <h1>Let’s reopen your workspace.</h1>
-          <p>
-            Something unexpected happened. Your submitted reports are stored on
-            the server.
-          </p>
+          <h1>{en.legacy.errorboundary_001}</h1>
+          <p>{en.legacy.errorboundary_002}</p>
           <button className="button primary" onClick={() => location.reload()}>
-            Reload FarmRelay
+            {en.legacy.errorboundary_003}
           </button>
         </main>
       );

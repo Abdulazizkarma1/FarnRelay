@@ -1,229 +1,368 @@
 .about-page {
-  max-width: 1300px;
+  max-width: 1280px;
   margin: auto;
-  padding: 28px 50px;
+  padding: 20px;
+  overflow-wrap: anywhere;
 }
-.about-page > header {
+.landing-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 28px;
+  gap: 16px;
+  min-height: 64px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--line);
 }
 .about-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  text-decoration: none;
+  gap: 9px;
+  font-size: 24px;
   font-weight: 700;
-  font-size: 23px;
   letter-spacing: -0.7px;
+  text-decoration: none;
+  color: var(--green);
+  min-height: 44px;
+  flex-shrink: 0;
 }
 .about-brand img {
-  width: 37px;
-  height: 37px;
+  width: 36px;
+  height: 36px;
 }
-.about-page nav {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
-.about-page nav > a {
-  font-size: 13px;
-  text-decoration: none;
-}
-.about-hero {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  align-items: center;
-  gap: 60px;
-  padding: 75px 0;
-}
-.about-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: #5d7351;
-}
-.about-hero h1 {
-  font-size: clamp(40px, 4.8vw, 66px);
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -3px;
-  margin: 25px 0;
-}
-.about-hero em {
-  font-family: Georgia, serif;
-  font-weight: 400;
-  color: #4b7047;
-}
-.about-hero p {
-  font-size: 16px;
-  line-height: 1.9;
-  color: var(--muted);
-  max-width: 480px;
-}
-.about-actions {
+.landing-header nav {
   display: flex;
   gap: 12px;
-  margin: 30px 0 20px;
-  flex-wrap: wrap;
+  align-items: center;
 }
-.about-actions a {
-  text-decoration: none;
+.landing-header nav > a:not(.ds-button) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 600;
 }
-.about-hero small {
-  font-size: 11px;
-  color: var(--muted);
+.landing-header .ds-button {
+  display: none;
 }
-.about-hero figure {
-  position: relative;
-  margin: 0;
-  height: 440px;
-  border-radius: 22px;
-  overflow: hidden;
-  background: #34562e;
+.landing-hero {
+  padding: 44px 0 48px;
+  display: grid;
+  gap: 32px;
 }
-.about-hero figure > img {
-  height: 100%;
+.landing-kicker {
+  font-size: 12px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  color: #496454;
+  line-height: 1.6;
+}
+.landing-hero h1 {
+  font-size: clamp(36px, 9vw, 60px);
+  line-height: 1.1;
+  letter-spacing: -1.8px;
+  color: #163d2b;
+  margin: 18px 0 22px;
+  max-width: 650px;
+}
+.landing-description {
+  font-size: 18px;
+  line-height: 1.8;
+  max-width: 570px;
+  color: #4f6257;
+}
+.landing-actions {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+  margin: 28px 0;
+}
+.landing-actions > .ds-button {
   width: 100%;
-  object-fit: cover;
+  min-height: 52px;
 }
-.about-hero figcaption {
+.landing-trust {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #405d48;
+}
+.landing-trust li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.landing-trust span {
+  color: #1d603c;
+}
+.landing-hero figure {
+  margin: 0;
+  position: relative;
+  background: #dbe7dc;
+  overflow: hidden;
+  border-radius: 22px;
+  aspect-ratio: 1.35;
+}
+.landing-hero figure > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.landing-hero figcaption {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 28px;
-  background: linear-gradient(transparent, #123422ee);
-  color: white;
-  display: grid;
-  gap: 14px;
+  padding: 24px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(transparent, #0b271bf0);
+  color: #fff;
+  min-height: 120px;
 }
-.about-hero figcaption span {
-  font-size: 10px;
-  letter-spacing: 2px;
+.landing-hero figcaption strong {
+  font-size: 22px;
+  line-height: 1.3;
+  max-width: 300px;
 }
-.about-hero figcaption strong {
-  font-size: 24px;
-  font-weight: 500;
+.landing-photo-mark {
+  font-size: 35px;
+  color: #e5efc7;
 }
-.about-principles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+.landing-how {
   border-top: 1px solid var(--line);
-  padding: 35px 0 55px;
+  padding: 40px 0;
 }
-.about-principles article {
-  padding: 12px;
+.landing-how h2,
+.landing-details h2 {
+  font-size: 28px;
+  letter-spacing: -0.7px;
+  line-height: 1.25;
+  color: #163d2b;
+  margin: 15px 0 24px;
 }
-.about-principles article > span {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #6c875b;
+.landing-steps {
+  display: grid;
+  gap: 18px;
 }
-.about-principles h2 {
+.landing-steps article {
+  padding: 24px;
+  border: 1px solid #dce5d9;
+  border-radius: 18px;
+  background: #fff;
+}
+.landing-step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #edf3e9;
+  color: #163d2b;
+  font: 14px var(--mono);
+  font-weight: 700;
+}
+.landing-steps h3 {
   font-size: 21px;
-  letter-spacing: -0.5px;
-  font-weight: 600;
+  letter-spacing: -0.4px;
+  margin: 24px 0 12px;
+  line-height: 1.3;
 }
-.about-principles p {
-  font-size: 14px;
-  line-height: 1.9;
-  color: var(--muted);
+.landing-steps p,
+.landing-details p {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #4f6257;
+  margin-bottom: 0;
 }
-.about-connectivity {
-  padding: 42px;
-  background: #e8eedc;
-  border: 1px solid #d7e1c8;
+.landing-details {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 48px;
+}
+.landing-details > article {
+  padding: 28px;
   border-radius: 20px;
 }
-.about-connectivity h2 {
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: -1px;
-  max-width: 650px;
+.connection-card {
+  background: #163d2b;
+  color: #d8e8d0;
 }
-.about-connectivity p {
+.connection-card h2 {
+  color: #fff;
+}
+.connection-card p {
+  color: #e2eddf;
+}
+.connection-card svg {
+  color: #d8e8d0;
+}
+.ai-explainer {
+  border: 1px solid #dce5d9;
+  background: #f0f4ea;
+}
+.landing-ai-mark {
+  font-size: 45px;
+  line-height: 1;
+  color: #163d2b;
+}
+.ai-explainer > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 20px;
+  font-weight: 600;
+  color: #163d2b;
+  font-size: 16px;
+}
+.landing-details .landing-validation {
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ccd9c6;
+}
+.landing-footer {
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.landing-footer strong {
+  font-size: 22px;
+  color: #163d2b;
+}
+.landing-footer p {
   font-size: 14px;
   line-height: 1.8;
-  max-width: 650px;
+  max-width: 360px;
+  color: #4f6257;
 }
-.about-connectivity a {
-  font-size: 13px;
-}
-.about-page > footer {
+.landing-footer nav {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 35px 0;
-  font-size: 11px;
-  color: var(--muted);
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+.landing-footer nav > a {
+  display: inline-flex;
   align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+  color: #405d48;
+}
+.landing-walkthrough {
+  padding: 28px 0;
 }
 .walkthrough-note {
-  padding: 24px;
-  background: #eaf0df;
+  font-size: 16px;
+  line-height: 1.8;
+  padding: 18px;
+  border: 1px solid #c4d8bc;
   border-radius: 12px;
-  margin: 25px 0;
-  font-size: 13px;
-  line-height: 1.7;
+  background: #eef5e8;
 }
-.walkthrough-done {
-  padding: 60px 0;
+.landing-hero,
+.landing-steps article {
+  animation: landing-arrive 0.3s ease-out;
 }
-.walkthrough-done a {
-  text-decoration: none;
+@keyframes landing-arrive {
+  from {
+    opacity: 0.6;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-@media (max-width: 850px) {
+@media (min-width: 560px) {
+  .landing-header .ds-button {
+    display: inline-flex;
+  }
+  .landing-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .landing-actions > .ds-button {
+    width: auto;
+  }
+  .landing-hero figure {
+    aspect-ratio: 1.5;
+  }
+  .landing-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .landing-steps article {
+    padding: 20px;
+  }
+  .landing-steps h3 {
+    font-size: 20px;
+  }
+}
+@media (min-width: 900px) {
   .about-page {
-    padding: 22px;
+    padding: 30px 48px;
   }
-  .about-hero {
-    gap: 30px;
+  .landing-header {
+    padding-bottom: 24px;
   }
-  .about-hero figure {
-    height: 380px;
+  .landing-hero {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+    gap: 50px;
+    padding: 72px 0;
   }
-  .about-hero h1 {
-    letter-spacing: -2px;
+  .landing-hero h1 {
+    font-size: clamp(45px, 4.6vw, 62px);
+    letter-spacing: -2.3px;
   }
-  .about-actions {
-    flex-direction: column;
+  .landing-hero figure {
+    aspect-ratio: 1.05;
   }
-}
-@media (max-width: 650px) {
-  .about-page > header {
+  .landing-how {
+    padding: 50px 0;
+  }
+  .landing-how h2 {
+    font-size: 34px;
+    margin-bottom: 30px;
+  }
+  .landing-steps {
+    gap: 24px;
+  }
+  .landing-steps article {
+    padding: 30px;
+  }
+  .landing-steps h3 {
+    font-size: 23px;
+  }
+  .landing-details {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 64px;
+  }
+  .landing-details > article {
+    padding: 36px;
+  }
+  .landing-footer {
+    flex-direction: row;
+    justify-content: space-between;
     align-items: flex-start;
   }
-  .about-page nav {
-    gap: 12px;
-    flex-wrap: wrap;
+  .landing-footer nav {
+    max-width: 500px;
     justify-content: flex-end;
   }
-  .about-page nav > a {
-    font-size: 11px;
-  }
-  .about-hero {
-    grid-template-columns: 1fr;
-    padding: 45px 0;
-  }
-  .about-hero figure {
-    height: 270px;
-  }
-  .about-principles {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .about-page > footer {
-    flex-wrap: wrap;
-  }
-  .about-connectivity {
-    padding: 25px;
-  }
-  .about-brand {
-    font-size: 20px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero,
+  .landing-steps article {
+    animation: none;
   }
 }

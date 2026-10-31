@@ -1,4 +1,5 @@
-import React from "react";
+import { en } from "../i18n/en.js";
+import React, { useEffect, useRef } from "react";
 import Icon from "./Icon.jsx";
 import "./UI.css";
 export function Badge({ children, tone }) {
@@ -22,11 +23,17 @@ export function Badge({ children, tone }) {
   );
 }
 export function PageTitle({ eyebrow, title, description, children }) {
+  const heading = useRef();
+  useEffect(() => {
+    heading.current?.focus();
+  }, []);
   return (
     <div className="page-title">
       <div>
         <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
+        <h1 ref={heading} tabIndex={-1}>
+          {title}
+        </h1>
         {description && <p className="page-description">{description}</p>}
       </div>
       {children && <div className="page-title-actions">{children}</div>}
@@ -65,7 +72,11 @@ export function Pagination({ page, pages, total, onChange }) {
   return (
     <div className="pagination">
       <span>
-        {total} total · Page {page} of {pages}
+        {total}
+        {en.legacy.ui_001}
+        {page}
+        {en.legacy.ui_002}
+        {pages}
       </span>
       <div>
         <button
@@ -73,14 +84,14 @@ export function Pagination({ page, pages, total, onChange }) {
           disabled={page <= 1}
           onClick={() => onChange(page - 1)}
         >
-          Previous
+          {en.legacy.ui_003}
         </button>
         <button
           className="button subtle"
           disabled={page >= pages}
           onClick={() => onChange(page + 1)}
         >
-          Next
+          {en.legacy.ui_004}
         </button>
       </div>
     </div>
@@ -109,7 +120,7 @@ export function DateText({ value }) {
             month: "short",
             year: "numeric",
           })
-        : "Not recorded"}
+        : en.legacy.ui_005}
     </>
   );
 }

@@ -39,7 +39,7 @@ Results are tied to an evidence version. New evidence makes old output outdated.
 
 ## Run locally
 
-Requires Node 22.12 or later and npm.
+Requires Node 22.19 or later and npm.
 
 ```sh
 npm ci
@@ -96,7 +96,11 @@ No software licence has been selected by the repository owner. Do not assume pub
 
 ## Photograph attribution
 
-Illustrative photographs are packaged locally as JPEGs inside SVG containers and are never presented as farmer evidence:
+Illustrative photographs are packaged locally as compressed WebP files and are never presented as farmer evidence:
 
 - [Landscape photograph](https://images.unsplash.com/photo-1500382017468-9049fed747ef)
 - [Tomato photograph](https://images.unsplash.com/photo-1546094096-0df4bcaaa337)
+
+## Farmer onboarding update
+
+The next release adds a separate signup/verify-email flow, descriptive officer-access requests, a branded green design system, optimised photography and mobile quality gates. See [ONBOARDING.md](docs/ONBOARDING.md) for the audit, phases, test commands and exact production configuration, and [account email templates](docs/email/README.md) for HTML and plain-text copy.

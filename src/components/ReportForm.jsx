@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import React, { useEffect, useRef, useState } from "react";
 import { prepareImage, newReportId, crops, symptoms } from "../lib.js";
 import {
@@ -26,14 +27,19 @@ function resumeDraft(draft = {}) {
       r.evidence.push({
         id: newReportId(),
         kind: "audio",
-        label: "Voice note",
+        label: en.legacy.reportform_1001,
         dataUrl: r.audioDataUrl,
         language: r.audioLanguage || "English",
       });
   }
   return r;
 }
-const STEPS = ["The crop", "Your evidence", "Field context", "Review & send"];
+const STEPS = [
+  en.legacy.reportform_1002,
+  en.legacy.reportform_1003,
+  en.legacy.reportform_1004,
+  en.legacy.reportform_1005,
+];
 export default function ReportForm({
   onSave,
   onCancel,
@@ -129,7 +135,7 @@ export default function ReportForm({
               {
                 id: newReportId(),
                 kind: "audio",
-                label: "Voice note",
+                label: en.legacy.reportform_1006,
                 dataUrl: value,
                 bytes: Math.floor((value.split(",")[1].length * 3) / 4),
                 language: audio?.language || "English",
@@ -180,7 +186,7 @@ export default function ReportForm({
   return (
     <div className="capture-layout investigation-capture">
       <section className="capture-panel">
-        <nav className="capture-steps" aria-label="Report progress">
+        <nav className="capture-steps" aria-label={en.legacy.reportform_001}>
           {STEPS.map((s, i) => (
             <button
               type="button"
@@ -197,19 +203,18 @@ export default function ReportForm({
         <form onSubmit={next}>
           <div className="capture-heading">
             <p className="eyebrow">
-              FIELD REPORT / {String(step + 1).padStart(2, "0")}
+              {en.legacy.reportform_002}
+              {String(step + 1).padStart(2, "0")}
             </p>
             <span role="status">{saveState}</span>
           </div>
           {step === 0 && (
             <>
-              <h2>What changed in your crop?</h2>
-              <p className="secondary">
-                Start with what you know. You do not need to know the cause.
-              </p>
+              <h2>{en.legacy.reportform_003}</h2>
+              <p className="secondary">{en.legacy.reportform_004}</p>
               <div className="form-grid">
                 <label>
-                  Crop
+                  {en.legacy.reportform_005}
                   <select
                     value={report.crop}
                     onChange={(e) => change("crop", e.target.value)}
@@ -220,43 +225,40 @@ export default function ReportForm({
                   </select>
                 </label>
                 <label>
-                  Community
+                  {en.legacy.reportform_006}
                   <input
                     required
                     minLength={2}
                     maxLength={100}
                     value={report.community}
                     onChange={(e) => change("community", e.target.value)}
-                    placeholder="Your community"
+                    placeholder={en.legacy.reportform_007}
                   />
                 </label>
               </div>
               {report.crop !== "Maize" && (
-                <p className="capture-note">
-                  AI investigation supports maize in this release. This crop
-                  will be sent for human review.
-                </p>
+                <p className="capture-note">{en.legacy.reportform_008}</p>
               )}
               <label>
-                Growth stage
+                {en.legacy.reportform_009}
                 <select
                   value={report.answers.growthStage || ""}
                   onChange={(e) => answer("growthStage", e.target.value)}
                 >
-                  <option value="">Choose if known</option>
+                  <option value="">{en.legacy.reportform_010}</option>
                   {[
-                    "Seedling",
-                    "Vegetative",
-                    "Flowering",
-                    "Maturing",
-                    "I do not know",
+                    en.legacy.reportform_011,
+                    en.legacy.reportform_012,
+                    en.legacy.reportform_013,
+                    en.legacy.reportform_014,
+                    en.legacy.reportform_015,
                   ].map((s) => (
                     <option key={s}>{s}</option>
                   ))}
                 </select>
               </label>
               <fieldset>
-                <legend>Visible concern</legend>
+                <legend>{en.legacy.reportform_016}</legend>
                 <div className="choice-grid">
                   {symptoms.map((s) => (
                     <button
@@ -275,14 +277,11 @@ export default function ReportForm({
           )}
           {step === 1 && (
             <>
-              <h2>A wider view. A closer look.</h2>
-              <p className="secondary">
-                Add a whole-plant photo and a close view if possible. Text-only
-                reports are also welcome.
-              </p>
+              <h2>{en.legacy.reportform_017}</h2>
+              <p className="secondary">{en.legacy.reportform_018}</p>
               <div className="capture-photo-tools">
                 <label>
-                  Photo label
+                  {en.legacy.reportform_019}
                   <select
                     value={label}
                     onChange={(e) => setLabel(e.target.value)}
@@ -298,14 +297,14 @@ export default function ReportForm({
                   disabled={busy || report.evidence.length >= 4}
                   onClick={() => file.current.click()}
                 >
-                  + Add photograph
+                  {en.legacy.reportform_020}
                 </button>
                 <input
                   ref={file}
                   className="sr-only"
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  aria-label="Crop photograph"
+                  aria-label={en.legacy.reportform_021}
                   onChange={(e) => photo(e.target.files[0])}
                 />
               </div>
@@ -317,7 +316,10 @@ export default function ReportForm({
                       <img src={e.dataUrl} alt={e.label} />
                       <figcaption>
                         <strong>{e.label}</strong>
-                        <span>{Math.round(e.bytes / 1024)} KB</span>
+                        <span>
+                          {Math.round(e.bytes / 1024)}
+                          {en.legacy.reportform_022}
+                        </span>
                       </figcaption>
                       {e.quality?.warning && <small>{e.quality.warning}</small>}
                       <button
@@ -330,7 +332,8 @@ export default function ReportForm({
                           )
                         }
                       >
-                        Remove {e.label.toLowerCase()}
+                        {en.legacy.reportform_023}
+                        {e.label.toLowerCase()}
                       </button>
                     </figure>
                   ))}
@@ -344,7 +347,7 @@ export default function ReportForm({
               )}{" "}
               {audio && (
                 <label>
-                  Recording language
+                  {en.legacy.reportform_024}
                   <select
                     value={audio.language}
                     onChange={(e) =>
@@ -364,20 +367,17 @@ export default function ReportForm({
                       ),
                     )}
                   </select>
-                  <small>
-                    English transcription is available to officers. Other
-                    recordings are kept for human listening.
-                  </small>
+                  <small>{en.legacy.reportform_025}</small>
                 </label>
               )}
             </>
           )}
           {step === 2 && (
             <>
-              <h2>Give the evidence some context.</h2>
+              <h2>{en.legacy.reportform_026}</h2>
               <div className="form-grid">
                 <label>
-                  When did you notice it?
+                  {en.legacy.reportform_027}
                   <input
                     type="date"
                     required
@@ -387,56 +387,59 @@ export default function ReportForm({
                   />
                 </label>
                 <label>
-                  How certain is the date?
+                  {en.legacy.reportform_028}
                   <select
                     value={report.answers.onsetKnown || "Known"}
                     onChange={(e) => answer("onsetKnown", e.target.value)}
                   >
-                    <option>Known</option>
-                    <option>Approximate</option>
-                    <option>Unknown</option>
+                    <option>{en.legacy.reportform_029}</option>
+                    <option>{en.legacy.reportform_030}</option>
+                    <option>{en.legacy.reportform_031}</option>
                   </select>
                 </label>
               </div>
               <label>
-                How many plants are affected?
+                {en.legacy.reportform_032}
                 <select
                   value={report.answers.extent || ""}
                   onChange={(e) => answer("extent", e.target.value)}
                 >
-                  <option value="">Choose if known</option>
+                  <option value="">{en.legacy.reportform_033}</option>
                   {[
-                    "One plant",
-                    "Several plants",
-                    "Much of the field",
-                    "Unsure",
+                    en.legacy.reportform_034,
+                    en.legacy.reportform_035,
+                    en.legacy.reportform_036,
+                    en.legacy.reportform_037,
                   ].map((s) => (
                     <option key={s}>{s}</option>
                   ))}
                 </select>
               </label>
               <label>
-                What have you noticed?
+                {en.legacy.reportform_038}
                 <textarea
                   required={!audio}
                   maxLength={2000}
                   rows={4}
                   value={report.description}
-                  placeholder="Describe the change in your own words."
+                  placeholder={en.legacy.reportform_039}
                   onChange={(e) => change("description", e.target.value)}
                 />
               </label>
               <div className="capture-prompts">
-                <p className="eyebrow">USEFUL DETAILS / OFFLINE CHECKLIST</p>
+                <p className="eyebrow">{en.legacy.reportform_040}</p>
                 {questions.map((q) => (
                   <label key={q.key}>
                     {q.question}
-                    <small>{q.reason} You can skip this.</small>
+                    <small>
+                      {q.reason}
+                      {en.legacy.reportform_041}
+                    </small>
                     <input
                       maxLength={500}
                       value={report.answers[q.key] || ""}
                       onChange={(e) => answer(q.key, e.target.value)}
-                      placeholder="Your observation or unsure"
+                      placeholder={en.legacy.reportform_042}
                     />
                   </label>
                 ))}
@@ -445,59 +448,58 @@ export default function ReportForm({
           )}
           {step === 3 && (
             <>
-              <h2>Ready for a closer look.</h2>
-              <p className="secondary">
-                Your case goes to authorised extension staff. AI can help
-                collect missing evidence after submission.
-              </p>
+              <h2>{en.legacy.reportform_043}</h2>
+              <p className="secondary">{en.legacy.reportform_044}</p>
               <div className="capture-summary">
                 <div>
-                  <small>CROP</small>
+                  <small>{en.legacy.reportform_045}</small>
                   <strong>{report.crop}</strong>
                 </div>
                 <div>
-                  <small>COMMUNITY</small>
+                  <small>{en.legacy.reportform_046}</small>
                   <strong>{report.community}</strong>
                 </div>
                 <div>
-                  <small>ATTACHMENTS</small>
+                  <small>{en.legacy.reportform_047}</small>
                   <strong>
-                    {report.evidence.length} ·{" "}
-                    {Math.round(attachmentBytes(report.evidence) / 1024)} KB
+                    {report.evidence.length}
+                    {en.legacy.reportform_048}{" "}
+                    {Math.round(attachmentBytes(report.evidence) / 1024)}
+                    {en.legacy.reportform_049}
                   </strong>
                 </div>
               </div>
-              <p>
-                {report.description || "Voice recording provided for review."}
-              </p>
+              <p>{report.description || en.legacy.reportform_050}</p>
               <ul className="capture-checklist">
                 {checklist.map((c) => (
                   <li key={c.label}>
                     <span>{c.done ? "✓" : "○"}</span>
                     {c.label}
-                    <small>{c.done ? "Included" : "Not recorded"}</small>
+                    <small>
+                      {c.done
+                        ? en.legacy.reportform_051
+                        : en.legacy.reportform_052}
+                    </small>
                   </li>
                 ))}
               </ul>
-              <p className="capture-note">
-                Submitting shares your evidence with authorised staff and may
-                send relevant content to Meta for assistance. A device draft
-                remains until all attachments are confirmed. This service does
-                not guarantee a response time.
-              </p>
+              <p className="capture-note">{en.legacy.reportform_053}</p>
               {progress && (
                 <div role="status" className="upload-progress">
                   <strong>
                     {progress.state === "submitted"
-                      ? "Submitted"
-                      : `Uploading ${progress.label || "case"}...`}
+                      ? en.legacy.reportform_054
+                      : en.legacy.reportform_055(progress.label || "case")}
                   </strong>
                   <progress
                     value={progress.completed}
                     max={progress.total || 1}
                   />
                   <small>
-                    {progress.completed} / {progress.total} attachments
+                    {progress.completed}
+                    {en.legacy.reportform_056}
+                    {progress.total}
+                    {en.legacy.reportform_057}
                   </small>
                 </div>
               )}
@@ -515,7 +517,7 @@ export default function ReportForm({
               disabled={busy || voiceBusy}
               onClick={leave}
             >
-              {onDraft ? "Save & leave" : "Leave walkthrough"}
+              {onDraft ? en.legacy.reportform_058 : en.legacy.reportform_059}
             </button>
             <div>
               {step > 0 && (
@@ -525,12 +527,16 @@ export default function ReportForm({
                   disabled={busy || voiceBusy}
                   onClick={() => setStep(step - 1)}
                 >
-                  Back
+                  {en.legacy.reportform_060}
                 </button>
               )}
               <button className="button primary" disabled={busy || voiceBusy}>
-                {busy ? "Working..." : step === 3 ? submitLabel : "Continue"}{" "}
-                <span aria-hidden="true">↗</span>
+                {busy
+                  ? en.legacy.reportform_061
+                  : step === 3
+                    ? submitLabel
+                    : en.legacy.reportform_062}{" "}
+                <span aria-hidden="true">{en.legacy.reportform_063}</span>
               </button>
             </div>
           </footer>
@@ -538,33 +544,30 @@ export default function ReportForm({
       </section>
       <aside className="capture-aside">
         <div className="capture-aside-photo">
-          <img src="/images/landscape.svg" alt="Cultivated fields" />
-          <span>FROM FIELD TO FOLLOW-UP</span>
+          <img src="/images/landscape.webp" alt={en.legacy.reportform_064} />
+          <span>{en.legacy.reportform_065}</span>
         </div>
-        <p className="eyebrow">A CLEARER CONVERSATION</p>
+        <p className="eyebrow">{en.legacy.reportform_066}</p>
         <h3>
-          You bring the observation.
+          {en.legacy.reportform_067}
           <br />
-          We help organise it.
+          {en.legacy.reportform_068}
         </h3>
         <ol>
           <li>
-            <b>Show the change</b>
-            <p>Photograph the whole plant and the affected area.</p>
+            <b>{en.legacy.reportform_069}</b>
+            <p>{en.legacy.reportform_070}</p>
           </li>
           <li>
-            <b>Share your context</b>
-            <p>A short description or voice note helps.</p>
+            <b>{en.legacy.reportform_071}</b>
+            <p>{en.legacy.reportform_072}</p>
           </li>
           <li>
-            <b>Keep in touch</b>
-            <p>Your officer can ask questions and follow up.</p>
+            <b>{en.legacy.reportform_073}</b>
+            <p>{en.legacy.reportform_074}</p>
           </li>
         </ol>
-        <div className="capture-note">
-          Drafts stay on this browser. Cloud AI and submission need a
-          connection.
-        </div>
+        <div className="capture-note">{en.legacy.reportform_075}</div>
       </aside>
     </div>
   );

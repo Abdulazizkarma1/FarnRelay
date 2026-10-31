@@ -1,3 +1,11 @@
+import { isReportDetailPath } from "./route-utils.js";
+import { en } from "./i18n/en.js";
+import { requestId } from "./id.js";
+import {
+  validateAuth,
+  normalizeEmail,
+  TERMS_VERSION,
+} from "../shared/auth-validation.js";
 import { authRedirect, exchangeEmailCode } from "./auth-links.js";
 import { getSupabase } from "./supabase.js";
 export class ApiError extends Error {
@@ -26,7 +34,7 @@ function check({ data, error }) {
           : error.code;
     throw new ApiError(
       error.message,
-      code === "AUTH_REQUIRED" ? 401 : error.code === "42501" ? 403 : 400,
+      code === en.legacy.api_001 ? 401 : error.code === "42501" ? 403 : 400,
       code,
     );
   }
@@ -49,12 +57,7 @@ async function factors() {
 async function challenge(code) {
   const fs = await factors();
   if (!fs.length) return;
-  if (!code)
-    throw new ApiError(
-      "Enter the six-digit code from your authenticator.",
-      401,
-      "MFA_REQUIRED",
-    );
+  if (!code) throw new ApiError(en.legacy.api_002, 401, en.legacy.api_003);
   check(
     await getSupabase().auth.mfa.challengeAndVerify({
       factorId: fs[0].id,
@@ -65,14 +68,10 @@ async function challenge(code) {
 async function me() {
   const db = getSupabase();
   const d = check(await db.auth.getUser());
-  if (!d.user) throw new ApiError("Please sign in.", 401, "AUTH_REQUIRED");
+  if (!d.user) throw new ApiError(en.legacy.api_004, 401, en.legacy.api_005);
   const aal = check(await db.auth.mfa.getAuthenticatorAssuranceLevel());
   if (aal.nextLevel === "aal2" && aal.currentLevel !== "aal2")
-    throw new ApiError(
-      "Complete your authenticator sign-in.",
-      401,
-      "MFA_REQUIRED",
-    );
+    throw new ApiError(en.legacy.api_006, 401, en.legacy.api_007);
   return rpc("/auth/me");
 }
 async function auth(path, body = {}) {
@@ -81,13 +80,24 @@ async function auth(path, body = {}) {
     case "/auth/me":
       return me();
     case "/auth/register": {
+      if (Object.keys(validateAuth("register", body)).length)
+        throw new ApiError(en.legacy.api_008, 400, "validation_failed");
       check(
         await db.auth.signUp({
-          email: body.email,
+          email: normalizeEmail(body.email),
           password: body.password,
           options: {
-            data: { name: body.name, community: body.community },
-            emailRedirectTo: authRedirect(location.origin, "signup"),
+            data: {
+              name: body.name.trim(),
+              requested_role: body.role,
+              terms_version: TERMS_VERSION,
+              terms_accepted_at: new Date().toISOString(),
+            },
+            emailRedirectTo: authRedirect(
+              location.origin,
+              "signup",
+              import.meta.env.DEV,
+            ),
           },
         }),
       );
@@ -98,7 +108,7 @@ async function auth(path, body = {}) {
     case "/auth/login": {
       check(
         await db.auth.signInWithPassword({
-          email: body.email,
+          email: normalizeEmail(body.email),
           password: body.password,
         }),
       );
@@ -108,7 +118,11 @@ async function auth(path, body = {}) {
     case "/auth/forgot":
       check(
         await db.auth.resetPasswordForEmail(body.email, {
-          redirectTo: authRedirect(location.origin, "recovery"),
+          redirectTo: authRedirect(
+            location.origin,
+            "recovery",
+            import.meta.env.DEV,
+          ),
         }),
       );
       return {
@@ -116,19 +130,26 @@ async function auth(path, body = {}) {
       };
     case "/auth/callback": {
       if (!["signup", "recovery"].includes(body.action))
-        throw new ApiError("Invalid email action.");
+        throw new ApiError(en.legacy.api_009);
       await exchangeEmailCode(db.auth, body.code);
       if (body.action === "recovery") {
-        recoveryToken = crypto.randomUUID();
+        recoveryToken = requestId();
         return { recoveryToken };
       }
-      check(await db.auth.signOut({ scope: "local" }));
-      return { message: "Email verified. You can now sign in." };
+      return {
+        message: "Email verified. You can now sign in.",
+        ...(await rpc("/auth/me")),
+      };
     }
     case "/auth/verify":
       check(await db.auth.verifyOtp({ token_hash: body.token, type: "email" }));
-      return { message: "Email verified. You can now sign in." };
+      return {
+        message: "Email verified. You can now sign in.",
+        ...(await rpc("/auth/me")),
+      };
     case "/auth/reset": {
+      if (Object.keys(validateAuth("reset", body)).length)
+        throw new ApiError(en.legacy.api_010, 400, "validation_failed");
       if (recoveryToken !== body.token) {
         check(
           await db.auth.verifyOtp({ token_hash: body.token, type: "recovery" }),
@@ -151,13 +172,35 @@ async function auth(path, body = {}) {
       check(await db.auth.signOut({ scope: "global" }));
       clearMedia();
       return { message: "Signed out on all devices." };
+    case "/auth/resend-public": {
+      check(
+        await db.auth.resend({
+          type: "signup",
+          email: normalizeEmail(body.email),
+          options: {
+            emailRedirectTo: authRedirect(
+              location.origin,
+              "signup",
+              import.meta.env.DEV,
+            ),
+          },
+        }),
+      );
+      return { message: "Verification email requested." };
+    }
     case "/auth/resend": {
       const { user } = check(await db.auth.getUser());
       check(
         await db.auth.resend({
           type: "signup",
           email: user.email,
-          options: { emailRedirectTo: authRedirect(location.origin, "signup") },
+          options: {
+            emailRedirectTo: authRedirect(
+              location.origin,
+              "signup",
+              import.meta.env.DEV,
+            ),
+          },
         }),
       );
       return { message: "Verification email requested." };
@@ -188,7 +231,7 @@ async function auth(path, body = {}) {
       return { secret: d.totp.secret };
     }
     case "/auth/mfa/confirm": {
-      if (!enrollmentId) throw new ApiError("Start authenticator setup again.");
+      if (!enrollmentId) throw new ApiError(en.legacy.api_011);
       check(
         await db.auth.mfa.challengeAndVerify({
           factorId: enrollmentId,
@@ -199,7 +242,7 @@ async function auth(path, body = {}) {
       return me();
     }
     default:
-      throw new ApiError("Account action is not supported.");
+      throw new ApiError(en.legacy.api_012);
   }
 }
 export async function uploadAttachment(
@@ -214,17 +257,16 @@ export async function uploadAttachment(
     /^data:([^;,]+)(?:;codecs=[a-zA-Z0-9.,-]+)?;base64,([A-Za-z0-9+/]+=*)$/.exec(
       value,
     );
-  if (!match) throw new ApiError("Unsupported attachment.");
+  if (!match) throw new ApiError(en.legacy.api_013);
   const allowed =
     kind === "photo"
       ? ["image/jpeg", "image/png", "image/webp"]
       : ["audio/webm", "audio/ogg", "audio/mp4", "audio/wav"];
-  if (!allowed.includes(match[1]))
-    throw new ApiError("Unsupported attachment type.");
+  if (!allowed.includes(match[1])) throw new ApiError(en.legacy.api_014);
   const bytes = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
   if (!bytes.length || bytes.length > (kind === "photo" ? 1500000 : 1100000))
-    throw new ApiError("Attachment is too large.");
-  const path = `${userId}/${clientId}/${crypto.randomUUID()}/${kind}`;
+    throw new ApiError(en.legacy.api_015);
+  const path = `${userId}/${clientId}/${requestId()}/${kind}`;
   check(
     await getSupabase()
       .storage.from("crop-evidence")
@@ -302,7 +344,7 @@ async function attachMedia(report) {
 }
 async function ai(path, body) {
   const { session } = check(await getSupabase().auth.getSession());
-  if (!session) throw new ApiError("Sign in again.", 401, "AUTH_REQUIRED");
+  if (!session) throw new ApiError(en.legacy.api_016, 401, en.legacy.api_017);
   const [, id, , kind] = path.split("/").filter(Boolean);
   const res = await fetch("/.netlify/functions/meta", {
     method: "POST",
@@ -316,11 +358,9 @@ async function ai(path, body) {
     signal: AbortSignal.timeout(60000),
   });
   if (!res.headers.get("content-type")?.includes("application/json"))
-    throw new ApiError(
-      "Meta functions are unavailable. Use the deployed Netlify app.",
-    );
+    throw new ApiError(en.legacy.api_018);
   const d = await res.json();
-  if (!res.ok) throw new ApiError(d.error || "AI request failed.", res.status);
+  if (!res.ok) throw new ApiError(d.error || en.legacy.api_019, res.status);
   return d;
 }
 export async function api(path, { method = "GET", body, signal } = {}) {
@@ -337,7 +377,7 @@ export async function api(path, { method = "GET", body, signal } = {}) {
       body || {},
       Object.fromEntries(url.searchParams),
     );
-    if (/^\/reports\/[^/]+$/.test(url.pathname) && method === "GET")
+    if (isReportDetailPath(url.pathname) && method === "GET")
       await attachMedia(d.report);
     return d;
   } catch (e) {
@@ -347,6 +387,17 @@ export async function api(path, { method = "GET", body, signal } = {}) {
   }
 }
 export const navigate = (path) => {
-  location.hash = path;
+  const routes = {
+    register: "/signup",
+    signup: "/signup",
+    "verify-email": "/verify-email",
+    login: "/login",
+    forgot: "/forgot-password",
+    terms: "/terms",
+    about: "/about",
+  };
+  const target = routes[path] || "/#" + path;
+  history.pushState(null, "", target);
+  window.dispatchEvent(new PopStateEvent("popstate"));
   window.scrollTo({ top: 0, behavior: "instant" });
 };

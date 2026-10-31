@@ -14,9 +14,51 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm test
       - run: npm run build
         env:
           VITE_SUPABASE_URL: https://test-project.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: public-ci-placeholder
       - run: npm audit --audit-level=high
+  onboarding-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: onboarding-mobile-proof
+          path: artifacts/browser/
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: onboarding-browser-failures
+          path: test-results/
+  mobile-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://fixture.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: public-test-key
+      - run: npm run audit:mobile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-lighthouse
+          path: artifacts/

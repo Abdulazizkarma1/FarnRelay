@@ -1,3 +1,5 @@
+import { en } from "./i18n/en.js";
+import { requestId } from "./id.js";
 import { getSupabase } from "./supabase.js";
 import { api, uploadAttachment } from "./api.js";
 import { saveDraft } from "./drafts.js";
@@ -9,43 +11,43 @@ export const PHOTO_LABELS = [
 export const GUIDANCE = [
   {
     id: "fao-faw",
-    title: "Integrated management of fall armyworm on maize",
+    title: en.legacy.investigation_1001,
     publisher: "FAO",
     url: "https://www.fao.org/family-farming/detail/en/c/1112643/",
-    note: "Background on systematic observation and integrated pest management. Human review required.",
+    note: en.legacy.investigation_1002,
   },
   {
     id: "cabi-plantwise",
-    title: "Plantwise crop advisory resources",
+    title: en.legacy.investigation_1003,
     publisher: "CABI",
     url: "https://www.cabi.org/projects/plantwise/",
-    note: "Reference material for crop advisers. Verify local applicability before giving advice.",
+    note: en.legacy.investigation_1004,
   },
 ];
 export function evidenceChecklist(report, evidence = []) {
   return [
     {
-      label: "Whole plant photograph",
+      label: en.legacy.investigation_1005,
       done: evidence.some(
         (e) => e.kind === "photo" && e.label === "Whole plant",
       ),
     },
     {
-      label: "Close view of concern",
+      label: en.legacy.investigation_1006,
       done: evidence.some(
         (e) => e.kind === "photo" && e.label === "Close view",
       ),
     },
     {
-      label: "When it started",
+      label: en.legacy.investigation_1007,
       done: !!report.onset && report.answers?.onsetKnown !== "Unknown",
     },
     {
-      label: "Extent across the field",
+      label: en.legacy.investigation_1008,
       done: !!(report.answers?.extent || report.affected),
     },
     {
-      label: "Farmer explanation",
+      label: en.legacy.investigation_1009,
       done:
         !!report.description?.trim() ||
         evidence.some((e) => e.kind === "audio"),
@@ -57,20 +59,20 @@ export function nextQuestions(report, evidence = []) {
   if (!evidence.some((e) => e.label === "Whole plant"))
     questions.push({
       key: "wholePlant",
-      question: "Can you add a photograph of the whole plant?",
-      reason: "A wider view gives the officer context.",
+      question: en.legacy.investigation_1010,
+      reason: en.legacy.investigation_1011,
     });
   if (!report.answers?.insects)
     questions.push({
       key: "insects",
-      question: "Have you seen insects on the affected plants?",
-      reason: "Record what you actually saw, including no insects or unsure.",
+      question: en.legacy.investigation_1012,
+      reason: en.legacy.investigation_1013,
     });
   if (!report.answers?.extent && !report.affected)
     questions.push({
       key: "extent",
-      question: "How widely is the concern present?",
-      reason: "One plant, several plants, much of the field, or unsure.",
+      question: en.legacy.investigation_1014,
+      reason: en.legacy.investigation_1015,
     });
   return questions.slice(0, 3);
 }
@@ -110,8 +112,8 @@ export async function signEvidence(items) {
 export async function submitCase(userId, draft, onProgress = () => {}) {
   const r = structuredClone(draft);
   r.uploads ||= {};
-  r.evidenceRequestId ||= crypto.randomUUID();
-  r.answersRequestId ||= crypto.randomUUID();
+  r.evidenceRequestId ||= requestId();
+  r.answersRequestId ||= requestId();
   await saveDraft(userId, r);
   const created = await api("/reports", {
     method: "POST",

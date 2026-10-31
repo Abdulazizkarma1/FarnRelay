@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import React, { useState } from "react";
 import { api } from "../api.js";
 import { PageTitle, Badge, ErrorNotice } from "./UI.jsx";
@@ -77,9 +78,9 @@ export default function AccountPage({ user, onUser, onLogout }) {
   return (
     <>
       <PageTitle
-        eyebrow="ACCOUNT & SECURITY"
-        title="Your account. Your control."
-        description="Manage your profile, sign-in security and active sessions."
+        eyebrow={en.legacy.accountpage_001}
+        title={en.legacy.accountpage_002}
+        description={en.legacy.accountpage_003}
       />
       <ErrorNotice error={error} />
       {message && (
@@ -91,12 +92,12 @@ export default function AccountPage({ user, onUser, onLogout }) {
         <section className="surface-card account-panel">
           <div className="account-panel-heading">
             <Icon name="user" />
-            <h2>Profile details</h2>
+            <h2>{en.legacy.accountpage_004}</h2>
             <Badge>{user.role}</Badge>
           </div>
           <form onSubmit={profile}>
             <label>
-              Full name
+              {en.legacy.accountpage_005}
               <input
                 required
                 minLength={2}
@@ -107,7 +108,7 @@ export default function AccountPage({ user, onUser, onLogout }) {
               />
             </label>
             <label>
-              Community
+              {en.legacy.accountpage_006}
               <input
                 maxLength={100}
                 value={community}
@@ -115,12 +116,14 @@ export default function AccountPage({ user, onUser, onLogout }) {
               />
             </label>
             <label>
-              Email address
+              {en.legacy.accountpage_007}
               <input value={user.email} disabled />
             </label>
             <div className="email-verification">
               <Badge tone={user.verified ? "green" : "amber"}>
-                {user.verified ? "Verified" : "Not verified"}
+                {user.verified
+                  ? en.legacy.accountpage_008
+                  : en.legacy.accountpage_009}
               </Badge>
               {!user.verified && (
                 <button
@@ -135,37 +138,33 @@ export default function AccountPage({ user, onUser, onLogout }) {
                     )
                   }
                 >
-                  Resend verification email
+                  {en.legacy.accountpage_010}
                 </button>
               )}
             </div>
             <button className="button primary" disabled={busy}>
-              Save profile
+              {en.legacy.accountpage_011}
             </button>
           </form>
         </section>
         <section className="surface-card account-panel">
           <div className="account-panel-heading">
             <Icon name="shield" />
-            <h2>Authenticator protection</h2>
+            <h2>{en.legacy.accountpage_012}</h2>
             <Badge tone={user.mfaEnabled ? "green" : "amber"}>
-              {user.mfaEnabled ? "Enabled" : "Not enabled"}
+              {user.mfaEnabled
+                ? en.legacy.accountpage_013
+                : en.legacy.accountpage_014}
             </Badge>
           </div>
-          <p>
-            Add a six-digit sign-in code from an authenticator app. Required for
-            all administrator data access.
-          </p>
+          <p>{en.legacy.accountpage_015}</p>
           {!user.mfaEnabled &&
             (enrollment ? (
               <form onSubmit={confirm}>
-                <p>
-                  In your authenticator app, add a time-based account named
-                  FarmRelay using this setup key:
-                </p>
+                <p>{en.legacy.accountpage_016}</p>
                 <code className="mfa-secret">{enrollment}</code>
                 <label>
-                  Six-digit code
+                  {en.legacy.accountpage_017}
                   <input
                     inputMode="numeric"
                     autoComplete="one-time-code"
@@ -177,34 +176,31 @@ export default function AccountPage({ user, onUser, onLogout }) {
                   />
                 </label>
                 <button className="button primary" disabled={busy}>
-                  Enable authenticator
+                  {en.legacy.accountpage_018}
                 </button>
               </form>
             ) : (
               <form onSubmit={setup}>
                 <button className="button outline" disabled={busy}>
-                  Set up authenticator
+                  {en.legacy.accountpage_019}
                 </button>
               </form>
             ))}
           {user.mfaEnabled && (
             <div className="security-enabled">
               <Icon name="check" />
-              <p>
-                Your account requires an authenticator at sign-in. Recovery
-                requires identity verification by the project operator.
-              </p>
+              <p>{en.legacy.accountpage_020}</p>
             </div>
           )}
         </section>
         <section className="surface-card account-panel">
           <div className="account-panel-heading">
             <Icon name="shield" />
-            <h2>Change password</h2>
+            <h2>{en.legacy.accountpage_021}</h2>
           </div>
           <form onSubmit={changePassword}>
             <label>
-              Current password
+              {en.legacy.accountpage_022}
               <input
                 required
                 type="password"
@@ -215,7 +211,7 @@ export default function AccountPage({ user, onUser, onLogout }) {
               />
             </label>
             <label>
-              New password
+              {en.legacy.accountpage_023}
               <input
                 required
                 type="password"
@@ -225,23 +221,19 @@ export default function AccountPage({ user, onUser, onLogout }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <small>At least 12 characters. Use a unique passphrase.</small>
+              <small>{en.legacy.accountpage_024}</small>
             </label>
             <button className="button outline" disabled={busy}>
-              Update password
+              {en.legacy.accountpage_025}
             </button>
           </form>
         </section>
         <section className="surface-card account-panel session-panel">
           <div className="account-panel-heading">
             <Icon name="logout" />
-            <h2>Session control</h2>
+            <h2>{en.legacy.accountpage_026}</h2>
           </div>
-          <p>
-            Supabase manages sign-in sessions. Signing out everywhere also
-            blocks your existing sessions from FarmRelay data, including this
-            one.
-          </p>
+          <p>{en.legacy.accountpage_027}</p>
           <button
             className="button danger"
             disabled={busy}
@@ -252,15 +244,11 @@ export default function AccountPage({ user, onUser, onLogout }) {
               })
             }
           >
-            Sign out all devices
+            {en.legacy.accountpage_028}
           </button>
           <div className="account-storage-note">
             <Icon name="leaf" />
-            <p>
-              Unsent drafts stay on this browser and are shown only when you
-              sign into this account. Use Device drafts to remove them before
-              sharing your device.
-            </p>
+            <p>{en.legacy.accountpage_029}</p>
           </div>
         </section>
       </div>

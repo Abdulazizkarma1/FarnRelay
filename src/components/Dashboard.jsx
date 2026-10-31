@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
 import { api, navigate } from "../api.js";
@@ -49,29 +50,25 @@ export default function Dashboard({ user }) {
       <PageTitle
         eyebrow={
           farmer
-            ? "YOUR FARM, CONNECTED"
+            ? en.legacy.dashboard_001
             : user.role === "admin"
-              ? "PLATFORM OVERVIEW"
-              : "FIELD INTELLIGENCE"
+              ? en.legacy.dashboard_002
+              : en.legacy.dashboard_003
         }
-        title={`Welcome back, ${name}.`}
-        description={
-          farmer
-            ? "Your observations, conversations and next steps, all in one place."
-            : "A clearer view of what needs attention in the field."
-        }
+        title={en.legacy.dashboard_004(name)}
+        description={farmer ? en.legacy.dashboard_005 : en.legacy.dashboard_006}
       >
         {farmer ? (
           <button className="button primary" onClick={() => navigate("new")}>
             <Icon name="plus" size={17} />
-            New crop report
+            {en.legacy.dashboard_007}
           </button>
         ) : (
           <button
             className="button outline"
             onClick={() => navigate("reports")}
           >
-            Open case workspace
+            {en.legacy.dashboard_008}
             <Icon name="arrow" size={16} />
           </button>
         )}
@@ -81,68 +78,58 @@ export default function Dashboard({ user }) {
         <div className="setup-card">
           <Icon name="shield" size={26} />
           <div>
-            <strong>Protect your administrator account</strong>
-            <p>
-              Enable your authenticator before changing access or assigning
-              reports.
-            </p>
+            <strong>{en.legacy.dashboard_009}</strong>
+            <p>{en.legacy.dashboard_010}</p>
           </div>
           <button
             className="button outline"
             onClick={() => navigate("account")}
           >
-            Set up protection
+            {en.legacy.dashboard_011}
           </button>
         </div>
       )}
       <section className="dashboard-hero">
-        <img
-          src="/images/landscape.svg"
-          alt="Cultivated fields in warm morning light"
-        />
+        <img src="/images/landscape.webp" alt={en.legacy.dashboard_012} />
         <div className="dashboard-hero-shade" />
         <div className="dashboard-hero-copy">
           <span>
             <i />
-            FROM FIELD TO FOLLOW-UP
+            {en.legacy.dashboard_013}
           </span>
           <h2>
             {farmer ? (
               <>
-                A small observation.
+                {en.legacy.dashboard_014}
                 <br />
-                <em>A better conversation.</em>
+                <em>{en.legacy.dashboard_015}</em>
               </>
             ) : (
               <>
-                Closer to the field.
+                {en.legacy.dashboard_016}
                 <br />
-                <em>Clearer on what comes next.</em>
+                <em>{en.legacy.dashboard_017}</em>
               </>
             )}
           </h2>
-          <p>
-            {farmer
-              ? "Show what changed. Share your voice. Keep a human in the loop."
-              : "Bring field evidence, farmer voices and careful judgement together."}
-          </p>
+          <p>{farmer ? en.legacy.dashboard_018 : en.legacy.dashboard_019}</p>
           <button
             className="button light"
             onClick={() => navigate(farmer ? "new" : "reports")}
           >
-            {farmer ? "Record an observation" : "Review crop reports"}
+            {farmer ? en.legacy.dashboard_020 : en.legacy.dashboard_021}
             <Icon name="arrow" size={16} />
           </button>
         </div>
         <div className="hero-index">
-          <span>01 / OBSERVE</span>
-          <span>02 / UNDERSTAND</span>
-          <span>03 / RESPOND</span>
+          <span>{en.legacy.dashboard_022}</span>
+          <span>{en.legacy.dashboard_023}</span>
+          <span>{en.legacy.dashboard_024}</span>
         </div>
       </section>
       <section className="dashboard-stats">
         <StatCard
-          label="Recorded reports"
+          label={en.legacy.dashboard_025}
           value={data?.total}
           detail={
             farmer
@@ -154,7 +141,7 @@ export default function Dashboard({ user }) {
           icon="reports"
         />
         <StatCard
-          label="Awaiting review"
+          label={en.legacy.dashboard_026}
           value={counts["Needs review"]}
           detail="Ready for a closer look"
           icon="clock"
@@ -168,7 +155,7 @@ export default function Dashboard({ user }) {
           tone="blue"
         />
         <StatCard
-          label="Closed reports"
+          label={en.legacy.dashboard_027}
           value={counts.Closed}
           detail="Review marked as complete"
           icon="check"
@@ -178,11 +165,11 @@ export default function Dashboard({ user }) {
         <section className="surface-card recent-card">
           <div className="card-heading">
             <div>
-              <p className="eyebrow">THE LATEST IN YOUR WORKSPACE</p>
-              <h2>Recent crop reports</h2>
+              <p className="eyebrow">{en.legacy.dashboard_028}</p>
+              <h2>{en.legacy.dashboard_029}</h2>
             </div>
             <button className="text-button" onClick={() => navigate("reports")}>
-              View all ↗
+              {en.legacy.dashboard_030}
             </button>
           </div>
           {data?.recent?.length ? (
@@ -198,7 +185,9 @@ export default function Dashboard({ user }) {
                   <span>
                     <strong>{r.crop}</strong>
                     <small>
-                      {r.community} · <DateText value={r.createdAt} />
+                      {r.community}
+                      {en.legacy.dashboard_031}
+                      <DateText value={r.createdAt} />
                     </small>
                   </span>
                   <Badge>{r.status}</Badge>
@@ -208,15 +197,9 @@ export default function Dashboard({ user }) {
             </div>
           ) : (
             <Empty
-              title={
-                farmer
-                  ? "Your first report starts here."
-                  : "No reports in your workspace yet."
-              }
+              title={farmer ? en.legacy.dashboard_032 : en.legacy.dashboard_033}
               description={
-                farmer
-                  ? "Notice a change in your crops? A few details can start a useful conversation."
-                  : "Assigned reports will appear here. Administrators manage case assignment."
+                farmer ? en.legacy.dashboard_034 : en.legacy.dashboard_035
               }
               action={
                 farmer && (
@@ -224,7 +207,7 @@ export default function Dashboard({ user }) {
                     className="button outline"
                     onClick={() => navigate("new")}
                   >
-                    Create a report
+                    {en.legacy.dashboard_036}
                   </button>
                 )
               }
@@ -233,23 +216,20 @@ export default function Dashboard({ user }) {
         </section>
         <aside className="field-guide-card">
           <div className="field-guide-image">
-            <img src="/images/tomatoes.svg" alt="Illustrative fresh tomatoes" />
-            <span>FIELD NOTES / 01</span>
+            <img src="/images/tomatoes.webp" alt={en.legacy.dashboard_037} />
+            <span>{en.legacy.dashboard_038}</span>
           </div>
           <div>
-            <p className="eyebrow">BETTER EVIDENCE, BETTER FOLLOW-UP</p>
+            <p className="eyebrow">{en.legacy.dashboard_039}</p>
             <h3>
-              Start with what
+              {en.legacy.dashboard_040}
               <br />
-              you can see.
+              {en.legacy.dashboard_041}
             </h3>
-            <p>
-              Capture the affected area, note when it changed and say how much
-              of the crop is involved.
-            </p>
+            <p>{en.legacy.dashboard_042}</p>
             <span className="guide-tip">
-              <Icon name="mic" size={17} />A short voice note can add useful
-              context.
+              <Icon name="mic" size={17} />
+              {en.legacy.dashboard_043}
             </span>
           </div>
         </aside>
@@ -257,8 +237,8 @@ export default function Dashboard({ user }) {
       <section className="dashboard-bottom">
         <div className="surface-card distribution">
           <div className="card-heading">
-            <h2>Review progress</h2>
-            <span className="eyebrow">CURRENT REPORT STATUS</span>
+            <h2>{en.legacy.dashboard_044}</h2>
+            <span className="eyebrow">{en.legacy.dashboard_045}</span>
           </div>
           {["Needs review", "In review", "Follow-up needed", "Closed"].map(
             (s, i) => (
@@ -281,36 +261,36 @@ export default function Dashboard({ user }) {
         </div>
         {admin ? (
           <div className="surface-card platform-pulse">
-            <p className="eyebrow">ADMIN SNAPSHOT</p>
-            <h2>People behind the response.</h2>
+            <p className="eyebrow">{en.legacy.dashboard_046}</p>
+            <h2>{en.legacy.dashboard_047}</h2>
             <div>
               <span>
-                <b>{admin.users}</b>Registered accounts
+                <b>{admin.users}</b>
+                {en.legacy.dashboard_048}
               </span>
               <span>
-                <b>{admin.officers}</b>Active officers
+                <b>{admin.officers}</b>
+                {en.legacy.dashboard_049}
               </span>
               <span>
-                <b>{admin.unassigned}</b>Unassigned reports
+                <b>{admin.unassigned}</b>
+                {en.legacy.dashboard_050}
               </span>
             </div>
             <button className="text-button" onClick={() => navigate("users")}>
-              Manage people & access ↗
+              {en.legacy.dashboard_051}
             </button>
           </div>
         ) : (
           <div className="surface-card intelligence-note">
-            <span className="ai-symbol">∞</span>
-            <p className="eyebrow">META AI + HUMAN JUDGEMENT</p>
+            <span className="ai-symbol">{en.legacy.dashboard_052}</span>
+            <p className="eyebrow">{en.legacy.dashboard_053}</p>
             <h2>
-              More context.
+              {en.legacy.dashboard_054}
               <br />
-              Thoughtful decisions.
+              {en.legacy.dashboard_055}
             </h2>
-            <p>
-              Model output supports review. It does not replace a field visit,
-              an officer’s judgement or a confirmed diagnosis.
-            </p>
+            <p>{en.legacy.dashboard_056}</p>
           </div>
         )}
       </section>

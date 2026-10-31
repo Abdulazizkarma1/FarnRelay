@@ -61,3 +61,11 @@ test("only a successful provider code exchange establishes the callback session"
   );
   await assert.rejects(() => exchangeEmailCode(auth, ""), /Invalid/);
 });
+
+test("managed HTTP preview redirects are allowed only under an explicit development flag", () => {
+  assert.throws(() => authRedirect("http://terminal.local:4173", "signup"));
+  assert.equal(
+    authRedirect("http://terminal.local:4173", "signup", true),
+    "http://terminal.local:4173/?auth_action=signup",
+  );
+});

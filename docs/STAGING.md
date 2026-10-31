@@ -17,6 +17,7 @@ This project already existed when the organisation was confirmed. No additional 
 | -------------- | ---------------------- |
 | 20261030175537 | farmrelay              |
 | 20261030175601 | investigation_workflow |
+| 20261031183220 | onboarding_validation |
 
 The local migration filenames match the hosted history. SQL content is unchanged. Do not reapply these migrations to this project.
 
@@ -41,3 +42,5 @@ A local ignored `.env.local` contains public client configuration for developmen
 ## Advisor observations
 
 The private `app_private.rate_limits` table deliberately denies client access and has no client policy. Supabase reports this as informational. See [RLS with no policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy). New indexes are unused until workload arrives, so no index was removed merely for an initial unused-index notice.
+
+The onboarding migration is applied and service-only quota grants were checked. See ONBOARDING.md for the new gateway deployment, provider password policy, forwarded-IP setup and remaining email acceptance checks.

@@ -7,3 +7,6 @@ dist/
 *.log
 coverage/
 supabase/.temp/
+test-results/
+playwright-report/
+artifacts/

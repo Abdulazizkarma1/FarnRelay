@@ -33,8 +33,15 @@ before(async () => {
       "utf8",
     ),
   );
-  for (const file of (await readdir(new URL('../supabase/migrations/', import.meta.url))).sort()) {
-    await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
+  for (const file of (
+    await readdir(new URL("../supabase/migrations/", import.meta.url))
+  ).sort()) {
+    await db.exec(
+      await readFile(
+        new URL("../supabase/migrations/" + file, import.meta.url),
+        "utf8",
+      ),
+    );
   }
   for (const [name, id] of Object.entries(ids)) {
     await db.query(
@@ -268,11 +275,50 @@ test("enrolled MFA is enforced by RLS and app logout revokes retained tokens", a
   await rpc("/auth/logout-all", "POST");
   await assert.rejects(() => rpc("/reports"), /AUTH_REQUIRED/);
 });
-test('anonymous callers have no table or workflow access and public wrappers cannot bypass RLS',async()=>{
- await db.exec('reset role');
- const rows=(await db.query("select relname,relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'")).rows;
- assert.ok(rows.length>=5);assert.ok(rows.every(r=>r.relrowsecurity));
- const functions=(await db.query("select proname,prosecdef from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and proname like 'farmrelay_%'")).rows;
- assert.ok(functions.length>=6);assert.ok(functions.every(f=>!f.prosecdef));
- await db.exec('set role anon');await assert.rejects(()=>db.query('select * from public.reports'),/permission denied/);await assert.rejects(()=>rpc('/reports'),/permission denied/);
+test("anonymous callers have no table or workflow access and public wrappers cannot bypass RLS", async () => {
+  await db.exec("reset role");
+  const rows = (
+    await db.query(
+      "select relname,relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'",
+    )
+  ).rows;
+  assert.ok(rows.length >= 5);
+  assert.ok(rows.every((r) => r.relrowsecurity));
+  const functions = (
+    await db.query(
+      "select proname,prosecdef from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and proname like 'farmrelay_%'",
+    )
+  ).rows;
+  assert.ok(functions.length >= 6);
+  assert.ok(functions.every((f) => !f.prosecdef));
+  await db.exec("set role anon");
+  await assert.rejects(
+    () => db.query("select * from public.reports"),
+    /permission denied/,
+  );
+  await assert.rejects(() => rpc("/reports"), /permission denied/);
+});
+
+test("auth throttle is service-only and limits persist across separate calls", async () => {
+  await db.exec("reset role;set role authenticated");
+  await assert.rejects(
+    () =>
+      db.query("select public.farmrelay_auth_limit($1,'resend')", [
+        "a".repeat(64),
+      ]),
+    /permission denied/,
+  );
+  await db.exec("reset role;set role service_role");
+  for (let i = 0; i < 5; i++)
+    await db.query("select public.farmrelay_auth_limit($1,'resend')", [
+      "a".repeat(64),
+    ]);
+  await assert.rejects(
+    () =>
+      db.query("select public.farmrelay_auth_limit($1,'resend')", [
+        "a".repeat(64),
+      ]),
+    /RATE_LIMIT/,
+  );
+  await db.exec("reset role");
 });

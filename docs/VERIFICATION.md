@@ -41,3 +41,12 @@ CI status must be read from the pull request's actual workflow run. Local succes
 ## Production email callback fix, 31 October 2026
 
 Added explicit standard Supabase PKCE code callbacks for signup and recovery, alongside existing token-hash support. Three new regression tests cover redirect origins, callback parsing and successful/failed provider exchange. The 35-test suite and configured build pass locally. Actual delivery and end-to-end verification/reset remain pending the production Site URL and allowlist correction, deployment and fresh emails.
+
+## Farmer onboarding release checks, 31 October 2026
+
+- Lint and 49 automated Node/PGlite/function tests pass locally, including validators, client state, service-only quotas, provider proxy behavior, secure UUID fallback, core contrast pairs and the report-summary routing regression.
+- Configured production build passes with lazy auth screens, separate vendor chunks and compressed photography.
+- Production dependency audit reports zero vulnerabilities. The full toolchain has 10 moderate development-only advisories, with no high or critical findings. These are in lint/audit tooling, not imported by application code; do not describe the entire dependency tree as vulnerability-free.
+- The hosted onboarding migration applied successfully. A rolled-back service-role quota call passed; anonymous/authenticated roles have no execution grant. Requested officer access remains descriptive and does not grant staff access.
+- Supabase advisor reports leaked-password protection disabled, plus the intentional private rate-limit table's informational no-policy notice. Enable provider password protection and 15-character minimum in Auth settings where supported; this release does not claim complete NIST compliance.
+- The browser test workflow and production mobile Lighthouse gate are committed. Their actual CI results must be inspected before claiming the performance/accessibility target passed. Synthetic E2E does not prove email delivery or live Meta inference.

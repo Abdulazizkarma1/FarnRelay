@@ -1,9 +1,54 @@
 :root {
-  --ink: #17251d;
-  --green: #286447;
-  --muted: #647168;
-  --line: #e3e7dc;
-  --surface: #f6f5ef;
+  --green-50: #eef5ef;
+  --green-100: #d9e9dc;
+  --green-200: #b5d2bc;
+  --green-300: #82b390;
+  --green-400: #50835f;
+  --green-500: #326b47;
+  --green-600: #245537;
+  --green-700: #163d2b;
+  --green-800: #102e20;
+  --green-900: #092116;
+  --neutral-0: #fff;
+  --neutral-50: #f7f8f3;
+  --neutral-100: #eef1e9;
+  --neutral-200: #dce4da;
+  --neutral-500: #52655a;
+  --neutral-700: #314b3b;
+  --neutral-900: #172b20;
+  --success: #1d603c;
+  --success-bg: #ecf6ef;
+  --warning: #775117;
+  --warning-bg: #fff6df;
+  --error: #a52622;
+  --error-bg: #fff3f0;
+  --info: #21476b;
+  --info-bg: #edf4fb;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 3px 10px #163d2b08;
+  --shadow-md: 0 10px 36px #163d2b14;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --ink: var(--neutral-900);
+  --green: var(--green-700);
+  --muted: var(--neutral-500);
+  --line: var(--neutral-200);
+  --surface: var(--neutral-50);
   --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-family: "DM Sans", Arial, sans-serif;
   color: var(--ink);
@@ -238,4 +283,105 @@ button:disabled:hover {
 }
 textarea {
   resize: vertical;
+}
+
+body {
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex="-1"]:focus-visible {
+  outline: 3px solid #286743;
+  outline-offset: 4px;
+}
+.button {
+  font-size: 16px;
+  min-height: 48px;
+}
+.text-button {
+  min-height: 44px;
+  font-size: 14px;
+}
+.secondary {
+  font-size: 16px;
+}
+.eyebrow {
+  font-size: 12px;
+  color: #4f6257;
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  transform: translateY(-180%);
+  background: #163d2b;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.workspace-shell input,
+.workspace-shell textarea,
+.workspace-shell select {
+  font-size: 16px;
+  min-height: 48px;
+}
+.workspace-shell p,
+.workspace-shell label,
+.page-description {
+  font-size: 16px;
+  line-height: 1.75;
+}
+.workspace-shell button {
+  min-height: 44px;
+}
+.workspace-content {
+  min-width: 0;
+}
+.workspace-shell .badge {
+  font-size: 12px;
+}
+.workspace-shell .topbar-search input {
+  min-height: 44px;
+}
+.workspace-shell .error-notice,
+.workspace-shell .success-notice {
+  font-size: 16px;
+}
+.workspace-shell .page-title h1 {
+  scroll-margin-top: 24px;
+}
+.initial-loading {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  color: #163d2b;
+}
+
+.workspace-shell button {
+  min-width: 44px;
+}
+.workspace-shell nav a {
+  min-height: 44px;
+}
+.workspace-shell small {
+  font-size: 12px;
+  line-height: 1.6;
 }

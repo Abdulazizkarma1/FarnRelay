@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
 import { api, navigate } from "../api.js";
@@ -24,9 +25,9 @@ export default function NotificationsPage() {
   return (
     <>
       <PageTitle
-        eyebrow="YOUR UPDATES"
-        title="Keep the conversation moving."
-        description="Feedback, assignments and report updates. Showing your latest 30 notifications."
+        eyebrow={en.legacy.notificationspage_001}
+        title={en.legacy.notificationspage_002}
+        description={en.legacy.notificationspage_003}
       />
       <ErrorNotice error={error} />
       {!data && !error ? (
@@ -55,8 +56,8 @@ export default function NotificationsPage() {
         </section>
       ) : (
         <Empty
-          title="You’re all caught up."
-          description="Report updates will appear here when your team or a farmer responds."
+          title={en.legacy.notificationspage_004}
+          description={en.legacy.notificationspage_005}
         />
       )}
     </>

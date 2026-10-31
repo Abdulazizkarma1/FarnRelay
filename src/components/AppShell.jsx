@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import { subscribeToWorkspace } from "../supabase.js";
 import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState } from "react";
@@ -9,16 +10,21 @@ export default function AppShell({ user, page, onLogout, children }) {
   const liveVersion = useLiveRefresh();
   useEffect(() => {
     let timer;
-    const stop = subscribeToWorkspace(() => {
-      clearTimeout(timer);
-      timer = setTimeout(
-        () => window.dispatchEvent(new Event("farmrelay:data-changed")),
-        250,
-      );
-    });
+    let stop;
+    try {
+      stop = subscribeToWorkspace(() => {
+        clearTimeout(timer);
+        timer = setTimeout(
+          () => window.dispatchEvent(new Event("farmrelay:data-changed")),
+          250,
+        );
+      });
+    } catch {
+      setError(en.ui.realtimeFallback);
+    }
     return () => {
       clearTimeout(timer);
-      stop();
+      stop?.();
     };
   }, [user.id]);
   const [open, setOpen] = useState(false),
@@ -48,22 +54,24 @@ export default function AppShell({ user, page, onLogout, children }) {
     };
   }, [page, liveVersion]);
   const links = [
-    ["dashboard", "grid", "Overview"],
+    ["dashboard", "grid", en.legacy.appshell_1001],
     [
       "reports",
       "reports",
       user.role === "farmer" ? "My reports" : "Case workspace",
     ],
-    ...(user.role === "farmer" ? [["drafts", "leaf", "Device drafts"]] : []),
-    ["notifications", "bell", "Notifications"],
+    ...(user.role === "farmer"
+      ? [["drafts", "leaf", en.legacy.appshell_1002]]
+      : []),
+    ["notifications", "bell", en.legacy.appshell_1003],
     ...(user.role === "admin"
       ? [
-          ["users", "users", "People & access"],
-          ["audit", "shield", "Activity log"],
+          ["users", "users", en.legacy.appshell_1004],
+          ["audit", "shield", en.legacy.appshell_1005],
         ]
       : []),
-    ["evaluation", "spark", "Evaluation lab"],
-    ["account", "user", "Account & security"],
+    ["evaluation", "spark", en.legacy.appshell_1006],
+    ["account", "user", en.legacy.appshell_1007],
   ];
   async function logout() {
     setError("");
@@ -79,7 +87,7 @@ export default function AppShell({ user, page, onLogout, children }) {
       {open && (
         <button
           className="sidebar-scrim"
-          aria-label="Close menu"
+          aria-label={en.legacy.appshell_001}
           onClick={() => setOpen(false)}
         />
       )}
@@ -91,14 +99,14 @@ export default function AppShell({ user, page, onLogout, children }) {
           <span>
             <Icon name="leaf" size={24} />
           </span>
-          FarmRelay
+          {en.legacy.appshell_002}
           <span className="brand-dot" />
         </button>
         <div className="workspace-label">
-          <span>WORKSPACE</span>
+          <span>{en.legacy.appshell_003}</span>
           <Badge>{user.role}</Badge>
         </div>
-        <nav aria-label="Workspace">
+        <nav aria-label={en.legacy.appshell_004}>
           {links.map(([id, icon, label]) => (
             <button
               className={page === id ? "active" : ""}
@@ -115,9 +123,9 @@ export default function AppShell({ user, page, onLogout, children }) {
           <span className="sidebar-note-icon">
             <Icon name="spark" />
           </span>
-          <h3>Evidence, with context.</h3>
-          <p>AI helps organise what we see. People decide what happens next.</p>
-          <span>META AI ASSISTANCE</span>
+          <h3>{en.legacy.appshell_005}</h3>
+          <p>{en.legacy.appshell_006}</p>
+          <span>{en.legacy.appshell_007}</span>
         </div>
         <div className="sidebar-user">
           <div className="avatar">{user.name.slice(0, 2).toUpperCase()}</div>
@@ -125,13 +133,17 @@ export default function AppShell({ user, page, onLogout, children }) {
             <strong>{user.name}</strong>
             <span>
               {user.role === "farmer"
-                ? "Farmer account"
+                ? en.legacy.appshell_008
                 : user.role === "admin"
-                  ? "Platform administrator"
-                  : "Extension officer"}
+                  ? en.legacy.appshell_009
+                  : en.legacy.appshell_010}
             </span>
           </div>
-          <button title="Sign out" aria-label="Sign out" onClick={logout}>
+          <button
+            title={en.legacy.appshell_011}
+            aria-label={en.legacy.appshell_012}
+            onClick={logout}
+          >
             <Icon name="logout" size={18} />
           </button>
         </div>
@@ -140,15 +152,18 @@ export default function AppShell({ user, page, onLogout, children }) {
         <header className="workspace-topbar">
           <button
             className="mobile-menu"
-            aria-label="Open menu"
+            aria-label={en.legacy.appshell_013}
             aria-expanded={open}
             onClick={() => setOpen(!open)}
           >
             <Icon name="menu" />
           </button>
           <div className="breadcrumb">
-            Workspace <span>/</span>
-            <b>{links.find((l) => l[0] === page)?.[2] || "Crop report"}</b>
+            {en.legacy.appshell_014}
+            <span>{en.legacy.appshell_015}</span>
+            <b>
+              {links.find((l) => l[0] === page)?.[2] || en.legacy.appshell_016}
+            </b>
           </div>
           <form
             className="global-search"
@@ -159,8 +174,8 @@ export default function AppShell({ user, page, onLogout, children }) {
           >
             <Icon name="search" size={16} />
             <input
-              aria-label="Search reports"
-              placeholder="Search reports..."
+              aria-label={en.legacy.appshell_017}
+              placeholder={en.legacy.appshell_018}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               maxLength={100}
@@ -168,11 +183,11 @@ export default function AppShell({ user, page, onLogout, children }) {
           </form>
           <span className={"network-pill " + (!online ? "offline" : "")}>
             <i />
-            {online ? "Connected" : "Offline"}
+            {online ? en.legacy.appshell_019 : en.legacy.appshell_020}
           </span>
           <button
             className="topbar-bell"
-            aria-label={`${unread} unread notifications`}
+            aria-label={en.legacy.appshell_021(unread)}
             onClick={() => navigate("notifications")}
           >
             <Icon name="bell" />
@@ -180,34 +195,35 @@ export default function AppShell({ user, page, onLogout, children }) {
           </button>
           <button
             className="avatar top-avatar"
-            aria-label="Open account"
+            aria-label={en.legacy.appshell_022}
             onClick={() => navigate("account")}
           >
             {user.name.slice(0, 1).toUpperCase()}
           </button>
         </header>
-        <main className="workspace-content">
+        <main id="main-content" tabIndex={-1} className="workspace-content">
           <ErrorNotice error={error} />
           {!online && (
-            <div className="connectivity-notice">
-              You’re offline. You can save a report draft on this loaded page.
-              Sending and AI tools need a connection.
-            </div>
+            <div className="connectivity-notice">{en.legacy.appshell_023}</div>
           )}
           {!user.verified && (
             <div className="verify-notice">
               <Icon name="shield" />
-              <span>Verify your email to submit or review reports.</span>
-              <button onClick={() => navigate("account")}>Open account</button>
+              <span>{en.legacy.appshell_024}</span>
+              <button onClick={() => navigate("account")}>
+                {en.legacy.appshell_025}
+              </button>
             </div>
           )}
           {children}
         </main>
         <footer className="workspace-footer">
           <span>
-            FarmRelay <i /> Built for better field conversations.
+            {en.legacy.appshell_026}
+            <i />
+            {en.legacy.appshell_027}
           </span>
-          <span>Human judgement, supported by evidence.</span>
+          <span>{en.legacy.appshell_028}</span>
         </footer>
       </div>
     </div>
