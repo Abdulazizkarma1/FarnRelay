@@ -147,14 +147,17 @@ export function createInvestigationHandler({
         );
       return json({ result: final.result, cached: false });
     } catch (e) {
-      if (runId && service)
-        await service
-          .rpc("farmrelay_finish_analysis", {
+      if (runId && service) {
+        // PostgREST builders are awaitable but do not expose Promise.catch().
+        // A failed cleanup must not hide the original provider error.
+        try {
+          await service.rpc("farmrelay_finish_analysis", {
             p_run_id: runId,
             p_result: null,
             p_error: "Analysis could not complete. Retry available.",
-          })
-          .catch(() => {});
+          });
+        } catch {}
+      }
       return json(
         {
           error: e.status
