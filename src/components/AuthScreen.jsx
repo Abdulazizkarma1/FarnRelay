@@ -1,3 +1,4 @@
+import LegalCopy from "./LegalContent.jsx";
 import React,{useRef,useState,useEffect} from 'react';
 import {api,navigate} from '../api.js';
 import {en} from '../i18n/en.js';
@@ -7,7 +8,7 @@ import {friendlyAuthError} from '../auth-errors.js';
 import AuthLayout from './AuthLayout.jsx';
 import {Input,PasswordInput,Select,Checkbox,Button,Alert,Modal} from './Primitives.jsx';
 import './AuthScreen.css';
-export function LegalCopy(){return <div className="legal-copy"><p>{en.legal.intro}</p>{en.legal.sections.map(([title,body])=><section key={title}><h2>{title}</h2><p>{body}</p></section>)}<p>{en.legal.version}</p></div>;}
+
 export default function AuthScreen({mode='login',token,onAuthenticated,onVerified}) {
  const kind=mode==='signup'?'register':mode;
  const [form,setForm]=useState(()=>({name:'',email:getPending()?.email||'',password:'',role:getPending()?.role||'farmer',terms:false,otp:''}));

@@ -1,14 +1,18 @@
 import { en } from "./i18n/en.js";
 import { savePending } from "./auth-state.js";
-import VerifyEmail from "./components/VerifyEmail.jsx";
-import InfoPage from "./components/InfoPage.jsx";
+
+
 import { readAuthCallback } from "./auth-links.js";
-import AuthCallback from "./components/AuthCallback.jsx";
+
 import { getSupabase } from "./supabase.js";
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { api, navigate, setCsrf, clearMedia } from "./api.js";
-import AuthScreen from "./components/AuthScreen.jsx";
+
 import AppShell from "./components/AppShell.jsx";
+const VerifyEmail=lazy(()=>import("./components/VerifyEmail.jsx"));
+const InfoPage=lazy(()=>import("./components/InfoPage.jsx"));
+const AuthCallback=lazy(()=>import("./components/AuthCallback.jsx"));
+const AuthScreen=lazy(()=>import("./components/AuthScreen.jsx"));
 const AboutPage = lazy(() => import("./components/AboutPage.jsx"));
 const EvaluationPage = lazy(() => import("./components/EvaluationPage.jsx"));
 const Dashboard = lazy(() => import("./components/Dashboard.jsx"));

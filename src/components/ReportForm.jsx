@@ -538,7 +538,7 @@ export default function ReportForm({
       </section>
       <aside className="capture-aside">
         <div className="capture-aside-photo">
-          <img src="/images/landscape.svg" alt="Cultivated fields" />
+          <img src="/images/landscape.webp" alt="Cultivated fields" />
           <span>FROM FIELD TO FOLLOW-UP</span>
         </div>
         <p className="eyebrow">A CLEARER CONVERSATION</p>

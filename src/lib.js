@@ -1,6 +1,6 @@
 export const photos = {
-  landscape: "/images/landscape.svg",
-  tomatoes: "/images/tomatoes.svg",
+  landscape: "/images/landscape.webp",
+  tomatoes: "/images/tomatoes.webp",
 };
 export const crops = ["Maize", "Cassava", "Tomato", "Cashew", "Rice", "Other"];
 export const symptoms = [

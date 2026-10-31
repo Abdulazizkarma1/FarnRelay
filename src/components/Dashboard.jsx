@@ -97,7 +97,7 @@ export default function Dashboard({ user }) {
       )}
       <section className="dashboard-hero">
         <img
-          src="/images/landscape.svg"
+          src="/images/landscape.webp"
           alt="Cultivated fields in warm morning light"
         />
         <div className="dashboard-hero-shade" />
@@ -233,7 +233,7 @@ export default function Dashboard({ user }) {
         </section>
         <aside className="field-guide-card">
           <div className="field-guide-image">
-            <img src="/images/tomatoes.svg" alt="Illustrative fresh tomatoes" />
+            <img src="/images/tomatoes.webp" alt="Illustrative fresh tomatoes" />
             <span>FIELD NOTES / 01</span>
           </div>
           <div>

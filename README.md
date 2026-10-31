@@ -96,7 +96,7 @@ No software licence has been selected by the repository owner. Do not assume pub
 
 ## Photograph attribution
 
-Illustrative photographs are packaged locally as JPEGs inside SVG containers and are never presented as farmer evidence:
+Illustrative photographs are packaged locally as compressed WebP files and are never presented as farmer evidence:
 
 - [Landscape photograph](https://images.unsplash.com/photo-1500382017468-9049fed747ef)
 - [Tomato photograph](https://images.unsplash.com/photo-1546094096-0df4bcaaa337)
