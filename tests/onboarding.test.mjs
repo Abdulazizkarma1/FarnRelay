@@ -340,4 +340,5 @@ test("SDK 503 errors keep their status through API wrapping and show a service m
   assert.equal(friendlyAuthError(wrapped), en.errors.config);
   assert.equal(authErrorStatus({ status: 429 }), 429);
   assert.equal(authErrorStatus({}, "AUTH_REQUIRED"), 401);
+  assert.equal(authErrorStatus({ status: 400 }, "AUTH_REQUIRED"), 401);
 });
