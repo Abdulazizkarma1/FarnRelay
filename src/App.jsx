@@ -1,3 +1,5 @@
+import { readAuthCallback } from "./auth-links.js";
+import AuthCallback from "./components/AuthCallback.jsx";
 import { getSupabase } from "./supabase.js";
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { api, navigate, setCsrf, clearMedia } from "./api.js";
@@ -26,6 +28,9 @@ const NotificationsPage = lazy(
 import { Loading, ErrorNotice, Empty } from "./components/UI.jsx";
 import "./App.css";
 function route() {
+  const callback = readAuthCallback(location.href);
+  if (callback)
+    return { path: "email-callback", params: new URLSearchParams(), callback };
   const raw = location.hash.slice(1).replace(/^\//, "");
   const [path, query] = raw.split("?");
   return {
@@ -97,6 +102,13 @@ export default function App() {
     navigate(u.role === "admin" && !u.mfaEnabled ? "account" : "dashboard");
   }
   const [page, id] = current.path.split("/");
+  if (current.callback)
+    return (
+      <AuthCallback
+        callback={current.callback}
+        onAuthenticated={authenticated}
+      />
+    );
   if (page === "about" || (!user && !loading && !location.hash))
     return (
       <Suspense fallback={<Loading />}>

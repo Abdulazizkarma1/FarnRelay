@@ -1,3 +1,4 @@
+import { authRedirect, exchangeEmailCode } from "./auth-links.js";
 import { getSupabase } from "./supabase.js";
 export class ApiError extends Error {
   constructor(message, status = 400, code) {
@@ -86,7 +87,7 @@ async function auth(path, body = {}) {
           password: body.password,
           options: {
             data: { name: body.name, community: body.community },
-            emailRedirectTo: location.origin,
+            emailRedirectTo: authRedirect(location.origin, "signup"),
           },
         }),
       );
@@ -107,12 +108,23 @@ async function auth(path, body = {}) {
     case "/auth/forgot":
       check(
         await db.auth.resetPasswordForEmail(body.email, {
-          redirectTo: location.origin,
+          redirectTo: authRedirect(location.origin, "recovery"),
         }),
       );
       return {
         message: "If an account exists, a reset link will arrive by email.",
       };
+    case "/auth/callback": {
+      if (!["signup", "recovery"].includes(body.action))
+        throw new ApiError("Invalid email action.");
+      await exchangeEmailCode(db.auth, body.code);
+      if (body.action === "recovery") {
+        recoveryToken = crypto.randomUUID();
+        return { recoveryToken };
+      }
+      check(await db.auth.signOut({ scope: "local" }));
+      return { message: "Email verified. You can now sign in." };
+    }
     case "/auth/verify":
       check(await db.auth.verifyOtp({ token_hash: body.token, type: "email" }));
       return { message: "Email verified. You can now sign in." };
@@ -145,7 +157,7 @@ async function auth(path, body = {}) {
         await db.auth.resend({
           type: "signup",
           email: user.email,
-          options: { emailRedirectTo: location.origin },
+          options: { emailRedirectTo: authRedirect(location.origin, "signup") },
         }),
       );
       return { message: "Verification email requested." };
