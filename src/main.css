@@ -1,11 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=DM+Mono:wght@400;500&display=swap");
 :root {
-  --ink: #20382c;
-  --green: #315b36;
-  --muted: #7b8577;
+  --ink: #17251d;
+  --green: #286447;
+  --muted: #647168;
   --line: #e3e7dc;
-  --surface: #f6f7f1;
-  --mono: "DM Mono", monospace;
+  --surface: #f6f5ef;
+  --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-family: "DM Sans", Arial, sans-serif;
   color: var(--ink);
   background: var(--surface);
@@ -176,4 +175,67 @@ img {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+.button.subtle {
+  background: #f0f4e8;
+  border: 1px solid #e4eadb;
+  color: #82976a;
+}
+.button.danger {
+  background: #fff4ee;
+  border: 1px solid #ecd7c9;
+  color: #a07658;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #b5cb9c;
+  outline-offset: 2px;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+audio {
+  max-width: 100%;
+}
+summary {
+  cursor: pointer;
+}
+.text-button {
+  font-size: 12px;
+}
+.button {
+  font-size: 12px;
+  min-height: 43px;
+}
+.eyebrow {
+  line-height: 1.7;
+}
+form input,
+form select,
+form textarea {
+  font-family: inherit;
+}
+a:focus-visible {
+  outline: 3px solid #a8bf8d;
+  outline-offset: 3px;
+}
+
+.eyebrow {
+  color: #536a49;
+}
+.button.subtle {
+  color: #476137;
+}
+.button {
+  min-height: 44px;
+}
+.button.danger {
+  color: #943b2d;
+}
+button:disabled:hover {
+  transform: none;
+}
+textarea {
+  resize: vertical;
 }

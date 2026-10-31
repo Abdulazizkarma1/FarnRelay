@@ -1,0 +1,229 @@
+.report-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 26px 0;
+}
+.report-controls form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  padding: 10px 15px;
+  background: #fff;
+  border-radius: 9px;
+  min-width: 0;
+  width: 400px;
+  color: #94a282;
+}
+.report-controls input {
+  border: 0;
+  background: none;
+  min-width: 0;
+  flex: 1;
+  outline: 0;
+  font-size: 12px;
+  color: var(--ink);
+}
+.report-controls form:focus-within {
+  outline: 2px solid #bdcfaa;
+}
+.report-controls select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px;
+  background: white;
+  color: #657759;
+  font-size: 12px;
+}
+.case-register {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  overflow: hidden;
+  background: #fff;
+}
+.case-register-head,
+.case-register-row {
+  display: grid;
+  grid-template-columns:
+    minmax(210px, 1.8fr) minmax(90px, 1fr) minmax(110px, 1fr)
+    minmax(110px, 1fr) 20px;
+  gap: 20px;
+  align-items: center;
+}
+.case-register-head {
+  padding: 17px 24px;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #91a07f;
+  background: #fbfcf8;
+}
+.case-register-row {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid #edf0e7;
+  background: #fff;
+  text-align: left;
+  padding: 21px 24px;
+  color: #7b886f;
+  font-size: 12px;
+}
+.case-register-row:hover {
+  background: #f9fbf5;
+}
+.case-crop-cell {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+.case-crop-cell strong {
+  display: block;
+  font-size: 13px;
+  color: #405c38;
+  font-weight: 600;
+}
+.case-crop-cell small {
+  display: block;
+  font-size: 10px;
+  color: #95a086;
+  line-height: 1.6;
+  margin-top: 5px;
+}
+.case-crop-cell em {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  font-style: normal;
+  color: #74945b;
+  margin-top: 6px;
+}
+.case-register-row .badge {
+  justify-self: start;
+  font-size: 9px;
+}
+.draft-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+.draft-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.draft-card > img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+}
+.draft-card > div {
+  padding: 24px;
+}
+.draft-card h2 {
+  font-size: 22px;
+  letter-spacing: -0.7px;
+}
+.draft-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.draft-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 60px;
+}
+.draft-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.draft-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 25px 0;
+}
+.capture-panel .privacy-note {
+  font-size: 12px !important;
+  line-height: 1.8 !important;
+}
+@media (max-width: 1100px) {
+  .case-register-head,
+  .case-register-row {
+    grid-template-columns: minmax(180px, 1.7fr) 1fr 1fr 20px;
+    gap: 14px;
+  }
+  .case-register-head > span:nth-child(3),
+  .case-register-row > span:nth-child(3) {
+    display: none;
+  }
+  .draft-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .report-controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .report-controls form {
+    width: 100%;
+  }
+  .report-controls select {
+    width: 100%;
+  }
+  .case-register-head {
+    display: none;
+  }
+  .case-register-row {
+    grid-template-columns: 1fr auto;
+    padding: 20px;
+    gap: 13px;
+  }
+  .case-register-row > span:nth-child(2) {
+    grid-row: 2;
+    grid-column: 1;
+    font-size: 11px;
+    padding-left: 46px;
+  }
+  .case-register-row > .badge {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .case-register-row > .fr-icon {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .draft-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.queue-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.queue-tabs button {
+  border: 1px solid #d9e0d2;
+  background: white;
+  color: #56684f;
+  border-radius: 24px;
+  padding: 10px 15px;
+  font-size: 12px;
+  min-height: 44px;
+}
+.queue-tabs [aria-pressed="true"] {
+  background: #163d2b;
+  color: white;
+  border-color: #163d2b;
+}

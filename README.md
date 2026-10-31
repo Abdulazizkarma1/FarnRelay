@@ -1,80 +1,102 @@
-# FarmRelay
+![FarmRelay: A clearer picture. A better next step.](docs/assets/banner.svg)
 
-React JavaScript and vanilla CSS for farmer reporting, extension review and Meta AI assistance. Every JSX component has its own CSS file.
+<h1 align="center">FarmRelay</h1>
+<p align="center"><strong>From field observation to a reviewed next step.</strong></p>
+<p align="center">A browser workspace for farmers and extension officers, built for interrupted connections.</p>
+<p align="center"><a href="docs/DEPLOYMENT.md">Deploy</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/EVALUATION.md">Evaluation</a> · <a href="docs/VERIFICATION.md">Verification</a> · <a href="docs/DEMO.md">Demo guide</a></p>
 
-## Netlify setup
+![Checks](https://github.com/Abdulazizkarma1/FarnRelay/actions/workflows/ci.yml/badge.svg?branch=farmrelay-investigation)
+![React](https://img.shields.io/badge/React-JavaScript-286447)
+![CSS](https://img.shields.io/badge/Styling-Vanilla_CSS-286447)
+![Release](https://img.shields.io/badge/Release-3.0.0-286447)
 
-Use Node 22+. Run `npm ci`, `npm test`, and `npm run build`.
+## The problem
 
-- Build: `npm run build`
-- Publish: `dist`
-- Functions: `netlify/functions`
-- `MODEL_API_KEY`: Meta Model API secret, server-side only.
-- `META_MODEL`: optional, defaults to `muse-spark-1.3`.
-- `OFFICER_ACCESS_KEY`: a random secret of at least 24 characters for the pilot extension team. Do not use the Meta API key here.
+A photograph alone rarely tells an extension officer everything needed to understand a crop concern. The wider plant, when the change started, how widely it appears and the farmer's explanation can be missing. FarmRelay organises that evidence and keeps the response and follow-up in the same case.
 
-Set environment variables for production Functions and redeploy. Never prefix secrets with VITE_. Netlify Blobs uses the site's automatic runtime credentials. No separate database account is needed. Shared submission remains disabled until officer access is configured. Use `netlify dev` for local server functions. Vite alone serves the frontend only.
+The first AI scope is **maize evidence assistance**. Other crop reports can receive human review. This is a working software implementation awaiting hosted integration and field validation, not a validated diagnostic service.
 
-## Roles and workflow
+## What's in this build
 
-The homepage has two entrances:
+| Farmer                                     | Extension officer                                 | Administrator                        |
+| ------------------------------------------ | ------------------------------------------------- | ------------------------------------ |
+| Four-step reporting flow                   | Assigned-case workspace                           | Verified account and role management |
+| Labelled photographs and short voice notes | Inspect photographs, compare dates and listen     | Assign and reassign cases            |
+| Device drafts and upload checkpoints       | Meta evidence brief with source links             | Review queues and audit history      |
+| Guided questions and answers               | SAM region overlays and English transcription     | MFA required for data actions        |
+| Reviewed advice and field follow-up        | Ask questions, correct transcripts, record advice | Suspend accounts and revoke access   |
 
-1. **Farmer space**: capture a photo, optional voice note and context; save a local draft; explicitly send to the extension team; check status and read or send replies.
-2. **Extension team**: sign in, review actual submissions, filter the queue, play original audio, request Meta transcription, save a labelled unreviewed transcript, inspect image evidence and send reviewed feedback.
+**Shared:** status history, notifications, due queues, evidence versions, private media, analysis history and a local evaluation importer. The public About page includes a clearly labelled interface walkthrough without account creation or AI calls.
 
-Farmers do not need accounts. Each report has a random 256-bit private token. Its hash is stored server-side. A private recovery code grants access to that report on another device. Anyone with the code can read and reply, so keep it private. It is stored with the local report in IndexedDB and is not put in a URL.
+## How AI contributes
 
-Pilot officers share one access credential. Successful sign-in creates an eight-hour HMAC-signed HttpOnly, Secure, SameSite=Strict cookie. Changing the access key invalidates sessions. This is a pilot team login, not individual staff identity or a full account-management system. Authenticated farmers and officers have distinct reply roles even when both views are used in one browser.
+- **Muse Spark:** proposes missing-evidence questions and a structured officer brief. Every observation must cite an available source. Visible observations must cite photographs actually supplied to the model.
+- **SAM:** returns plant-region geometry displayed over the source image. A region is not a disease finding.
+- **Voice transcription:** produces an explicitly unreviewed English transcript. Twi, Dagbani, Hausa and other recordings remain playable for human listening or translation.
+- **Human review:** officers send advice themselves. AI output is never automatically published as reviewed advice.
 
-Shared reports use Netlify Blobs with strong consistency. Initial submissions are immutable and retried with the same ID/token to avoid duplicates. Replies and transcripts are separate append-only records. Production uses `farmrelay-live`; deploy previews use `farmrelay-preview`. Protect preview access because previews on the same Netlify site share its storage credentials.
+Results are tied to an evidence version. New evidence makes old output outdated. Permission and assignment checks run before paid calls and again before saving. Model access, exact provider behavior and costs must be verified with the deployment's credentials.
 
-## Voice
+## Run locally
 
-Browser MediaRecorder captures up to 30 seconds with playback, replace and remove controls. Supported recording formats depend on the browser. Recording requires HTTPS and microphone permission. Audio is saved locally and is uploaded only when the farmer sends the report.
+Requires Node 22.12 or later and npm.
 
-Officers can request English transcription with `muse-voice-transcribe-1.0` at `/v1/asr/transcribe`. The browser converts the clip to mono 16-bit PCM WAV at 16 kHz before the server sends multipart data to Meta. The server validates the WAV header and duration. A 30-second WAV is approximately 960 KB; the original compressed clip is usually much smaller.
+```sh
+npm ci
+cp .env.example .env.local
+npm run dev
+```
 
-Twi, Dagbani and Hausa are not on Meta's published language list. These recordings remain playable for human listening, with automatic transcription disabled. The app does not claim translation, local-language synthesis or transcription confidence. Transcripts are labelled unreviewed and separate from officer advice. Check the original recording before acting on a transcript.
+Set the public Supabase URL and publishable key in `.env.local`. Apply both migrations in filename order to a staging project. For Meta Functions, run `npx netlify dev` with the server variables from `.env.example`; set `APP_ORIGIN` to that exact local origin. Plain Vite does not serve Netlify Functions.
 
-## Evidence Lab
+Without Supabase configuration, the public About page and interface walkthrough still open. Authentication and cloud actions show configuration errors.
 
-Muse Spark creates structured observations, unknowns and follow-up questions. SAM 3.1 is connected through the documented Responses API; boxes are rendered when returned, while raster masks are counted but not rendered. On October 27, live Muse text and image calls succeeded; SAM returned upstream HTTP 404. Model access must be verified for the deployed account.
+```sh
+npm test
+npm run build
+npm audit --audit-level=high
+```
 
-AI output is a review aid, not a diagnosis, pesticide prescription or confirmed outbreak. API errors remain visible. Officer AI analysis stays in the current session. Shared officer replies and explicitly saved transcripts persist on the server. A saved transcript can supply context for a voice-only report.
+## Deploy on Netlify and Supabase
 
-The separate labelled sample workspace retains the earlier device-local demonstration. It is not the shared officer queue. Synthetic records are never uploaded to the shared queue by that workspace.
+Follow the complete [deployment guide](docs/DEPLOYMENT.md): migrations, SMTP and verification templates, environment variables, administrator bootstrap, MFA and staging acceptance. Railway, Express and MongoDB are not required.
 
-## Low connectivity and limitations
+**Release status:** local tests and compilation are recorded in [verification](docs/VERIFICATION.md). Both database migrations and transactional hosted SQL smoke checks now pass. End-to-end Auth, Storage, Realtime, SMTP and real Meta requests remain deployment checks. See [staging setup](docs/STAGING.md). The existing [prototype](https://farmrelay.netlify.app) may run an earlier build; it is not proof that this branch is deployed.
 
-- Photo resizing and short compressed recordings reduce upload size.
-- Drafts and private receipt codes persist in IndexedDB. Already-loaded pages can save offline.
-- Sending, checking for feedback and AI requests need internet. Users explicitly retry; there is no automatic background upload.
-- No service worker, offline page reopening, SMS, push alerts or background notifications yet.
-- Feedback is checked through the report page. No guaranteed response time or staffed service is implied.
-- No editing or attachment upload after submission yet. Farmers can add text updates.
-- Clearing browser storage removes local drafts and receipt codes. Save recovery codes separately.
-- Queue listing is suitable for a small pilot. It loads all case summaries and event histories; pagination and institutional scoping are future work.
-- Function-level rate limits are configured for login, shared reports and transcription. Verify Netlify's deployment logs for rule enforcement. Older sample AI endpoints remain public and require further access controls before a broad public launch.
+## Project map
 
-## Tests and verification
+```text
+src/components/       React screens, each with a matching CSS file
+src/investigation.js  Case actions, upload checkpoints and AI requests
+src/drafts.js         Per-account IndexedDB drafts
+src/evaluation.js     Reviewed-result metrics with explicit denominators
+netlify/functions/    Server-side Meta adapters and authorisation
+supabase/migrations/  Ordered schema, policies and workflow RPCs
+tests/                PostgreSQL access and function contract tests
+docs/                 Deployment, architecture, evaluation and demo guides
+```
 
-`npm test` covers field scoring, report grouping, SAM geometry parsing, request validation, private token authorization, shared reply flow, immutable retry behavior, officer sessions, WAV validation and the transcription adapter with mocked Meta output. These tests do not call paid APIs. Real browser microphone capture and live Meta voice model access still require a supported HTTPS device and configured officer access.
+## Connectivity and privacy
 
-## Score definition
+Photographs are resized and compressed before upload. Completed uploads are checkpointed for retries. The production service worker caches app code, not private reports, media or API responses. An already loaded session can keep device drafts during a dropped connection. A cold offline launch cannot authenticate or load cloud cases. Submission, AI and new advice require connectivity. Drafts are account-filtered but not encrypted on a shared browser.
 
-Crop: 10. Community: 15. Observation date: 15. Specific symptom: 15. Description of at least 25 characters: 20. Own photo: 25. Maximum 100. Field completeness only, not disease risk or model confidence. A recording alone does not award description points. Report groups match crop, community and symptom within seven days; closed and synthetic reports are excluded from the real queue.
+Signed media links expire after five minutes; Refresh case renews them. Uploads and database writes are separate operations: a partially created case can exist while its attachments are still pending. Device drafts remain until confirmation.
 
-## Photos
+## Research and honest measurement
 
-Illustrative photos are locally packaged JPEGs embedded in SVG containers. They are never presented as farmer evidence.
+See [evaluation](docs/EVALUATION.md) for the dataset register, leakage controls and review protocol. No dataset benchmark, disease accuracy, crop-loss reduction or adoption claim is shipped. The evaluation page calculates only imported measurements and labels them unverified.
 
-- https://images.unsplash.com/photo-1500382017468-9049fed747ef
-- https://images.unsplash.com/photo-1546094096-0df4bcaaa337
+The business hypothesis is organisation-sponsored access for extension programmes and cooperatives. Payments, tenancy isolation, subscriptions and paid service guarantees are outside this build.
 
-## References
+## Contributing and security
 
-- https://dev.meta.ai/docs/speech-to-text
-- https://dev.meta.ai/docs/api-reference/voice/transcribe
-- https://dev.meta.ai/docs/api-reference/voice/schemas
-- https://dev.meta.ai/docs/sam/overview
-- https://docs.netlify.com/build/data-and-storage/netlify-blobs/
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before changes and [SECURITY.md](SECURITY.md) before reporting an issue. Do not publish farmer recordings, private case data or credentials in issues. Documentation uses ordinary hyphens; JSX components use paired vanilla CSS files.
+
+No software licence has been selected by the repository owner. Do not assume public visibility grants reuse rights.
+
+## Photograph attribution
+
+Illustrative photographs are packaged locally as JPEGs inside SVG containers and are never presented as farmer evidence:
+
+- [Landscape photograph](https://images.unsplash.com/photo-1500382017468-9049fed747ef)
+- [Tomato photograph](https://images.unsplash.com/photo-1546094096-0df4bcaaa337)

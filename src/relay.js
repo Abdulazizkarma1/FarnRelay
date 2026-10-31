@@ -1,25 +1,3 @@
-export async function api(endpoint, data) {
-  const response = await fetch("/.netlify/functions/" + endpoint, {
-    method: data ? "POST" : "GET",
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "same-origin",
-    signal: AbortSignal.timeout(65000),
-  });
-  if (!response.headers.get("content-type")?.includes("application/json"))
-    throw Error(
-      "Server functions are unavailable. Open the deployed Netlify site.",
-    );
-  const result = await response.json();
-  if (!response.ok)
-    throw Error(result.error || "Request failed. Please retry.");
-  return result;
-}
-export function receiptToken() {
-  return Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
-    b.toString(16).padStart(2, "0"),
-  ).join("");
-}
 export function encodeWav(samples) {
   const buffer = new ArrayBuffer(44 + samples.length * 2),
     v = new DataView(buffer);
@@ -66,18 +44,4 @@ export async function recordingToWav(dataUrl) {
   } finally {
     await context.close();
   }
-}
-export async function transcribeAudio(audioDataUrl) {
-  const wav = await recordingToWav(audioDataUrl);
-  const response = await fetch("/.netlify/functions/transcribe", {
-    method: "POST",
-    headers: { "Content-Type": "audio/wav" },
-    body: wav,
-    signal: AbortSignal.timeout(65000),
-  });
-  if (!response.headers.get("content-type")?.includes("application/json"))
-    throw Error("Transcription service unavailable.");
-  const data = await response.json();
-  if (!response.ok) throw Error(data.error || "Transcription failed.");
-  return data;
 }

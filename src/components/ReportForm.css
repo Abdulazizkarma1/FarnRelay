@@ -1,293 +1,329 @@
 .capture-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  gap: 28px;
   align-items: start;
 }
 .capture-panel {
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px #163d2b05;
+}
+.capture-panel form {
   padding: 32px;
 }
-.step-track {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 26px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 30px;
+.capture-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #f0f3eb;
+  padding: 20px 24px;
+  gap: 10px;
 }
-.step-track > div {
+.capture-steps button {
   display: flex;
-  align-items: center;
   gap: 9px;
-  color: var(--muted);
-  font-size: 11px;
+  align-items: center;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-size: 12px;
+  padding: 0;
 }
-.step-track b {
+.capture-steps b {
   display: grid;
   place-items: center;
-  border: 1px solid var(--line);
+  min-width: 28px;
+  height: 28px;
+  border: 1px solid #b9c7b5;
   border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  font-size: 11px;
 }
-.step-track .reached {
+.capture-steps [aria-current="step"] {
   color: var(--green);
+  font-weight: 700;
 }
-.step-track .reached b {
+.capture-steps [aria-current="step"] b {
   background: var(--green);
   color: white;
   border-color: var(--green);
 }
-.capture-panel h2 {
-  font-size: 28px;
-  margin: 12px 0;
-}
-.upload-zone {
-  border: 1.5px dashed #b5c3ac;
-  border-radius: 13px;
-  background: #f7f9f3;
-  min-height: 235px;
-  margin: 24px 0;
-  overflow: hidden;
-  position: relative;
-}
-.upload-button {
-  border: 0;
-  background: none;
-  width: 100%;
-  min-height: 235px;
+.capture-heading {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: var(--muted);
-}
-.upload-button strong {
-  color: var(--ink);
-  font-size: 16px;
-}
-.upload-button small {
-  font-size: 11px;
-  margin-top: 5px;
-}
-.upload-symbol {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #c4d2bc;
-  color: var(--green);
-  font-size: 26px;
-  margin-bottom: 8px;
-}
-.has-photo {
-  height: 280px;
-  border-style: solid;
-  background: #142d25;
-}
-.has-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.photo-change {
-  position: absolute;
-  bottom: 14px;
-  right: 14px;
-  border: 0;
-  padding: 10px 15px;
-  background: white;
-  border-radius: 8px;
-}
-.compression-info {
-  display: flex;
+  justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
-  color: var(--muted);
+}
+.capture-heading > span {
   font-size: 11px;
+  color: var(--muted);
 }
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.capture-panel h2 {
+  font-size: 30px;
+  letter-spacing: -1px;
+  margin: 18px 0 10px;
 }
-.capture-panel label {
+.capture-panel .secondary {
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+.capture-panel label,
+.case-workspace label {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 22px 0;
-  font-size: 12px;
+  gap: 9px;
+  margin: 18px 0;
+  font-size: 13px;
   font-weight: 600;
 }
 .capture-panel input,
 .capture-panel select,
-.capture-panel textarea {
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--ink);
+.capture-panel textarea,
+.case-workspace input,
+.case-workspace select,
+.case-workspace textarea {
   width: 100%;
-  outline: none;
+  padding: 13px 14px;
+  border: 1px solid #d5ded2;
+  border-radius: 10px;
+  background: #fcfdfb;
+  color: var(--ink);
+  font-size: 15px;
+  min-height: 46px;
 }
-.capture-panel :is(input, select, textarea):focus {
-  border-color: #4f795c;
-  box-shadow: 0 0 0 3px #d7e6ce;
-}
-.capture-panel label small,
-.optional {
-  font-size: 11px;
+.capture-panel small,
+.case-workspace label small {
+  font-size: 12px;
   font-weight: 400;
   color: var(--muted);
+  line-height: 1.6;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.capture-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 22px 0;
+}
+.capture-panel legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
 }
 .choice-grid {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 .choice-grid button {
+  padding: 12px 15px;
+  border: 1px solid #dce3d7;
+  border-radius: 30px;
   background: white;
-  border: 1px solid var(--line);
-  padding: 10px 13px;
-  border-radius: 7px;
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
 }
 .choice-grid button.selected {
-  background: #edf4e7;
+  color: #fff;
+  background: var(--green);
   border-color: var(--green);
-  color: var(--green);
 }
-.form-actions {
+.capture-photo-tools {
   display: flex;
-  justify-content: space-between;
-  margin-top: 28px;
-  padding-top: 25px;
-  border-top: 1px solid var(--line);
+  align-items: center;
+  gap: 20px;
 }
-.capture-guide {
-  background: #e9eedf;
-  border-radius: 18px;
-  padding: 30px;
-  color: #294232;
+.capture-photo-tools label {
+  flex: 1;
 }
-.capture-guide h3 {
-  font-size: 25px;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -1px;
-  margin: 22px 0 30px;
-}
-.capture-guide > div {
-  display: flex;
-  gap: 14px;
-  padding: 15px 0;
-  border-top: 1px solid #d1dac8;
-}
-.capture-guide b {
-  font-size: 11px;
-  padding-top: 4px;
-}
-.capture-guide p {
-  font-size: 12px;
-  line-height: 1.8;
-  margin: 0;
-  color: #5e715e;
-}
-.capture-guide .guide-bottom {
-  margin-top: 30px;
-  font-size: 11px;
-}
-.review-summary {
-  display: flex;
-  justify-content: space-between;
+.capture-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
-  margin: 28px 0;
-  padding: 22px;
-  background: #f5f7f0;
-  border-radius: 10px;
 }
-.review-summary h3 {
-  margin: 8px 0 12px;
+.capture-photos figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
 }
-.review-summary small {
-  font-size: 11px;
+.capture-photos img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.capture-photos figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  padding: 12px 0;
+}
+.capture-photos figcaption span {
   color: var(--muted);
 }
-.review-score {
-  font-size: 32px;
-  color: var(--green);
-}
-.review-score small {
+.capture-photos small {
   display: block;
-  font-weight: 400;
 }
-.review-checklist {
+.capture-prompts {
+  padding: 18px 22px;
+  background: #f4f6ef;
+  border-radius: 15px;
+  margin-top: 24px;
+}
+.capture-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 24px;
+  background: #f3f6ee;
+  border-radius: 14px;
+  margin: 24px 0;
+}
+.capture-summary strong {
+  display: block;
+  font-size: 16px;
+  margin-top: 8px;
+}
+.capture-summary small {
+  letter-spacing: 1px;
+  font-size: 10px;
+}
+.capture-checklist {
   list-style: none;
   padding: 0;
 }
-.review-checklist li {
+.capture-checklist li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+  font-size: 14px;
+}
+.capture-checklist li small {
+  margin-left: auto;
+}
+.capture-checklist li > span {
+  color: var(--green);
+  font-weight: 700;
+}
+.capture-note {
+  padding: 16px 18px;
+  background: #f4f2e8;
+  border: 1px solid #e6e2cc;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #5f624e;
+}
+.capture-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  margin-top: 28px;
+}
+.capture-actions > div {
   display: flex;
   gap: 10px;
-  align-items: center;
-  font-size: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
 }
-.review-checklist small {
-  margin-left: auto;
-  color: var(--muted);
+.capture-aside {
+  padding: 0 4px;
 }
-.check-yes {
-  color: var(--green);
+.capture-aside-photo {
+  position: relative;
+  height: 165px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
 }
-.check-no {
-  color: #a99c7c;
+.capture-aside-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.privacy-note {
-  font-size: 12px;
-  background: #f6f2e8;
-  padding: 16px;
-  border-radius: 8px;
-  line-height: 1.7;
-  color: #786646;
+.capture-aside-photo span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #163d2bd9;
+  color: white;
+  padding: 15px;
+  font-size: 9px;
+  letter-spacing: 1.7px;
 }
-.form-error {
-  color: #a33424;
+.capture-aside h3 {
+  font-size: 24px;
+  line-height: 1.35;
+  letter-spacing: -0.5px;
+  font-weight: 500;
+}
+.capture-aside ol {
+  padding-left: 23px;
+}
+.capture-aside li {
+  padding: 10px 0 10px 8px;
   font-size: 13px;
+}
+.capture-aside li p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.upload-progress {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: #edf4e8;
+  border-radius: 10px;
+}
+.upload-progress progress {
+  width: 100%;
+  accent-color: var(--green);
 }
 @media (max-width: 1050px) {
   .capture-layout {
     grid-template-columns: 1fr;
   }
-  .capture-guide {
+  .capture-aside {
     display: none;
   }
 }
 @media (max-width: 600px) {
-  .capture-panel {
+  .capture-panel form {
     padding: 20px;
   }
-  .step-track span {
-    font-size: 9px;
+  .capture-steps {
+    padding: 16px;
   }
-  .step-track {
-    gap: 6px;
+  .capture-steps button {
+    flex-direction: column;
+    font-size: 10px;
   }
-  .step-track > div {
-    gap: 5px;
-  }
-  .form-grid {
+  .form-grid,
+  .capture-summary {
     grid-template-columns: 1fr;
-    gap: 0;
   }
   .capture-panel h2 {
-    font-size: 24px;
+    font-size: 25px;
+  }
+  .capture-heading {
+    flex-direction: column;
+  }
+  .capture-photo-tools {
+    flex-wrap: wrap;
+  }
+  .capture-photo-tools label {
+    min-width: 100%;
+  }
+  .capture-actions {
+    flex-wrap: wrap;
+  }
+  .capture-photos img {
+    height: 130px;
   }
 }
