@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import React, { useEffect, useRef, useState } from "react";
 import "./VoiceNote.css";
 export default function VoiceNote({
@@ -63,7 +64,7 @@ export default function VoiceNote({
         setWaiting(true);
         const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
         if (blob.size > 1000000 || !blob.size) {
-          setError("Recording was empty or too large. Please try again.");
+          setError(en.legacy.voicenote_001);
           setWaiting(false);
           onBusyChange(false);
           return;
@@ -77,7 +78,7 @@ export default function VoiceNote({
           }
         };
         reader.onerror = () => {
-          setError("Could not save recording.");
+          setError(en.legacy.voicenote_002);
           setWaiting(false);
           onBusyChange(false);
         };
@@ -96,8 +97,8 @@ export default function VoiceNote({
     } catch (e) {
       stream.current?.getTracks().forEach((t) => t.stop());
       setError(
-        e.name === "NotAllowedError"
-          ? "Microphone permission was denied. Enable it or type your report."
+        e.name === en.legacy.voicenote_003
+          ? en.legacy.voicenote_004
           : e.message,
       );
       setWaiting(false);
@@ -107,16 +108,16 @@ export default function VoiceNote({
   return (
     <section className="voice-note">
       <div>
-        <span className="eyebrow">YOUR VOICE / UP TO 30 SECONDS</span>
-        <h3>Tell us what changed.</h3>
-        <p>Describe the crop, what you noticed and when it started.</p>
+        <span className="eyebrow">{en.legacy.voicenote_005}</span>
+        <h3>{en.legacy.voicenote_006}</h3>
+        <p>{en.legacy.voicenote_007}</p>
       </div>
       {value && (
         <audio
           controls
           preload="none"
           src={value}
-          aria-label="Your recorded field note"
+          aria-label={en.legacy.voicenote_008}
         />
       )}
       <div className="voice-actions">
@@ -127,12 +128,12 @@ export default function VoiceNote({
           onClick={recording ? stop : start}
         >
           {recording
-            ? `Stop recording · ${seconds}s`
+            ? en.legacy.voicenote_009(seconds)
             : waiting
-              ? "Preparing..."
+              ? en.legacy.voicenote_010
               : value
-                ? "Record again"
-                : "Record voice note"}
+                ? en.legacy.voicenote_011
+                : en.legacy.voicenote_012}
         </button>
         {value && !recording && (
           <button
@@ -141,7 +142,7 @@ export default function VoiceNote({
             disabled={waiting}
             onClick={() => onChange(null)}
           >
-            Remove recording
+            {en.legacy.voicenote_013}
           </button>
         )}
       </div>
@@ -158,9 +159,7 @@ export default function VoiceNote({
           ))}
         </div>
       )}
-      <small>
-        Saved on this device first. It is shared only when you send the report.
-      </small>
+      <small>{en.legacy.voicenote_014}</small>
       {error && (
         <p role="alert" className="form-error">
           {error}

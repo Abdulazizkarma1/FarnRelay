@@ -1,1 +1,15 @@
-.callback-options{display:grid;gap:12px;margin-top:20px}.callback-options>a{display:flex;align-items:center;min-height:44px;color:#163d2b;line-height:1.7}.account-card>.ds-button{width:100%}
+.callback-options {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+.callback-options > a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: #163d2b;
+  line-height: 1.7;
+}
+.account-card > .ds-button {
+  width: 100%;
+}

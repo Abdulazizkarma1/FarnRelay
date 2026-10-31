@@ -1,11 +1,12 @@
 // Explicit callbacks keep default Supabase PKCE emails compatible with hash routes.
-export function authRedirect(origin, action) {
+export function authRedirect(origin, action, development = false) {
   if (!["signup", "recovery"].includes(action))
     throw Error("Unsupported email action.");
   const url = new URL(origin);
   if (
     url.protocol !== "https:" &&
-    !["localhost", "127.0.0.1"].includes(url.hostname)
+    !["localhost", "127.0.0.1"].includes(url.hostname) &&
+    !(development && url.hostname === "terminal.local")
   )
     throw Error("Authentication requires HTTPS.");
   return url.origin + "/?auth_action=" + action;

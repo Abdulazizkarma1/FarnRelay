@@ -1,6 +1,6 @@
+import { friendlyAuthError } from "./auth-errors.js";
 import { en } from "./i18n/en.js";
 import { savePending } from "./auth-state.js";
-
 
 import { readAuthCallback } from "./auth-links.js";
 
@@ -9,10 +9,10 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import { api, navigate, setCsrf, clearMedia } from "./api.js";
 
 import AppShell from "./components/AppShell.jsx";
-const VerifyEmail=lazy(()=>import("./components/VerifyEmail.jsx"));
-const InfoPage=lazy(()=>import("./components/InfoPage.jsx"));
-const AuthCallback=lazy(()=>import("./components/AuthCallback.jsx"));
-const AuthScreen=lazy(()=>import("./components/AuthScreen.jsx"));
+const VerifyEmail = lazy(() => import("./components/VerifyEmail.jsx"));
+const InfoPage = lazy(() => import("./components/InfoPage.jsx"));
+const AuthCallback = lazy(() => import("./components/AuthCallback.jsx"));
+const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
 const AboutPage = lazy(() => import("./components/AboutPage.jsx"));
 const EvaluationPage = lazy(() => import("./components/EvaluationPage.jsx"));
 const Dashboard = lazy(() => import("./components/Dashboard.jsx"));
@@ -39,10 +39,15 @@ function route() {
   const callback = readAuthCallback(location.href);
   if (callback)
     return { path: "email-callback", params: new URLSearchParams(), callback };
-  const raw = location.hash.slice(1).replace(/^\//, "") || location.pathname.replace(/^\//, "");
+  const raw =
+    location.hash.slice(1).replace(/^\//, "") ||
+    location.pathname.replace(/^\//, "");
   const [path, query] = raw.split("?");
   return {
-    path: ({signup:"register","forgot-password":"forgot"})[path] || path || "about",
+    path:
+      { signup: "register", "forgot-password": "forgot" }[path] ||
+      path ||
+      "about",
     params: new URLSearchParams(query || ""),
   };
 }
@@ -64,11 +69,17 @@ export default function App() {
     try {
       const data = await api("/auth/me");
       setUser(data.user);
-      if (!data.user.verified) {savePending(data.user.email,{sent:false});navigate("verify-email");}
-      else if (!current.callback && data.user.role === "admin" && !data.user.mfaEnabled)
+      if (!data.user.verified) {
+        savePending(data.user.email, { sent: false });
+        navigate("verify-email");
+      } else if (
+        !current.callback &&
+        data.user.role === "admin" &&
+        !data.user.mfaEnabled
+      )
         navigate("account");
     } catch (e) {
-      if (e.status !== 401) setConnectionError(e.message);
+      if (e.status !== 401) setConnectionError(friendlyAuthError(e));
     } finally {
       setLoading(false);
     }
@@ -80,9 +91,26 @@ export default function App() {
       subscription = getSupabase().auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_OUT") {
           clearMedia();
-          loggedOut();
+          setUser(null);
+          const publicAuth = [
+            "/signup",
+            "/verify-email",
+            "/login",
+            "/forgot-password",
+            "/auth/verified",
+          ];
+          if (
+            !publicAuth.includes(location.pathname) &&
+            !/^#\/?(reset|verify)/.test(location.hash)
+          )
+            loggedOut();
         }
-        if (["SIGNED_IN","USER_UPDATED","TOKEN_REFRESHED"].includes(event)) setTimeout(()=>{api("/auth/me").then(d=>setUser(d.user)).catch(()=>{});},0);
+        if (["SIGNED_IN", "USER_UPDATED", "TOKEN_REFRESHED"].includes(event))
+          setTimeout(() => {
+            api("/auth/me")
+              .then((d) => setUser(d.user))
+              .catch(() => {});
+          }, 0);
         if (event === "SIGNED_IN")
           setUser((previous) => {
             if (previous && previous.id !== session?.user.id) {
@@ -95,6 +123,7 @@ export default function App() {
     } catch {}
 
     const update = () => {
+      if (location.hash === "#main-content") return;
       setCurrent(route());
       window.scrollTo(0, 0);
     };
@@ -111,13 +140,31 @@ export default function App() {
   function authenticated(u) {
     setUser(u);
     setConnectionError("");
-    if(!u.verified){savePending(u.email,{sent:false});navigate("verify-email");return;}
+    if (!u.verified) {
+      savePending(u.email, { sent: false });
+      navigate("verify-email");
+      return;
+    }
     navigate(u.role === "admin" && !u.mfaEnabled ? "account" : "dashboard");
   }
   const [page, id] = current.path.split("/");
-  useEffect(()=>{
-    if(!loading&&!user&&["dashboard","reports","new","drafts","account","notifications","users","audit"].includes(page))navigate("login");
-  },[page,loading,user]);
+  useEffect(() => {
+    if (
+      !loading &&
+      !user &&
+      [
+        "dashboard",
+        "reports",
+        "new",
+        "drafts",
+        "account",
+        "notifications",
+        "users",
+        "audit",
+      ].includes(page)
+    )
+      navigate("login");
+  }, [page, loading, user]);
   if (current.callback)
     return (
       <AuthCallback
@@ -134,16 +181,35 @@ export default function App() {
   if (page === "evaluation" && !user)
     return (
       <main style={{ maxWidth: 1200, margin: "auto", padding: 28 }}>
-        <a href="#about">← About FarmRelay</a>
+        <a href="#about">{en.legacy.app_001}</a>
         <Suspense fallback={<Loading />}>
           <EvaluationPage />
         </Suspense>
       </main>
     );
-  if(page==="verify-email")return <VerifyEmail onAuthenticated={authenticated}/>;
-  if(page==="terms")return <InfoPage kind="terms"/>;
-  if(page==="verify")return <AuthCallback key={current.path} token={current.params.get("token")} onAuthenticated={authenticated} onVerified={()=>{api("/auth/me").then(d=>setUser(d.user)).catch(()=>{});}}/>;
-  if(page==="auth"&&id==="verified")return <AuthCallback callback={{error:true}} onAuthenticated={authenticated}/>;
+  if (page === "verify-email")
+    return <VerifyEmail onAuthenticated={authenticated} />;
+  if (page === "terms") return <InfoPage kind="terms" />;
+  if (page === "verify")
+    return (
+      <AuthCallback
+        key={current.path}
+        token={current.params.get("token")}
+        onAuthenticated={authenticated}
+        onVerified={() => {
+          api("/auth/me")
+            .then((d) => setUser(d.user))
+            .catch(() => {});
+        }}
+      />
+    );
+  if (page === "auth" && id === "verified")
+    return (
+      <AuthCallback
+        callback={{ error: true }}
+        onAuthenticated={authenticated}
+      />
+    );
   if (["reset"].includes(page))
     return (
       <AuthScreen
@@ -159,8 +225,9 @@ export default function App() {
         }}
       />
     );
-  if (loading) return <Loading text="Opening FarmRelay..." />;
-  if (!user && !["login","register","forgot"].includes(page))return <InfoPage kind="404"/>;
+  if (loading) return <Loading text={en.legacy.app_002} />;
+  if (!user && !["login", "register", "forgot"].includes(page))
+    return <InfoPage kind="404" />;
   if (!user)
     return (
       <>
@@ -168,7 +235,7 @@ export default function App() {
           <div className="connection-banner">
             <ErrorNotice error={connectionError} />
             <button className="text-button" onClick={boot}>
-              Retry connection
+              {en.legacy.app_003}
             </button>
           </div>
         )}
@@ -176,10 +243,11 @@ export default function App() {
           key={page}
           mode={["register", "forgot"].includes(page) ? page : "login"}
           onAuthenticated={authenticated}
+          notice={notice}
         />
       </>
     );
-  if(!user.verified)return <VerifyEmail onAuthenticated={authenticated}/>;
+  if (!user.verified) return <VerifyEmail onAuthenticated={authenticated} />;
   let content;
   if (page === "evaluation") content = <EvaluationPage />;
   else if (page === "account")
@@ -205,22 +273,30 @@ export default function App() {
     content = <Dashboard user={user} />;
   else
     content = (
-      <InfoPage kind="404"/>
+      <section>
+        <h1 tabIndex={-1}>{en.notFound.title}</h1>
+        <Empty
+          title={en.notFound.title}
+          description={en.notFound.body}
+          action={
+            <a className="button primary" href="/about">
+              {en.notFound.action}
+            </a>
+          }
+        />
+      </section>
     );
   return (
     <AppShell key={user.id} user={user} page={page} onLogout={loggedOut}>
       {notice && (
         <div role="status" className="workspace-toast">
           <span>{notice}</span>
-          <button
-            aria-label="Dismiss notification"
-            onClick={() => setNotice("")}
-          >
-            ×
+          <button aria-label={en.legacy.app_004} onClick={() => setNotice("")}>
+            {en.legacy.app_005}
           </button>
         </div>
       )}
-      <Suspense fallback={<Loading text="Opening workspace..." />}>
+      <Suspense fallback={<Loading text={en.legacy.app_006} />}>
         {content}
       </Suspense>
     </AppShell>

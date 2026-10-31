@@ -1,2 +1,13 @@
 /* AuthScreen composes AuthLayout and Primitives. This file owns flow-only overrides. */
-.account-card [aria-busy=true]{cursor:progress}.account-card .ds-alert>.ds-button{margin-top:12px}.account-card a{font-weight:600}.account-card .ds-field input{scroll-margin-block:28px}
+.account-card [aria-busy="true"] {
+  cursor: progress;
+}
+.account-card .ds-alert > .ds-button {
+  margin-top: 12px;
+}
+.account-card a {
+  font-weight: 600;
+}
+.account-card .ds-field input {
+  scroll-margin-block: 28px;
+}

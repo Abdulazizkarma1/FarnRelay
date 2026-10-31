@@ -1,3 +1,5 @@
+import { en } from "../i18n/en.js";
+import { requestId } from "../id.js";
 import React, { useEffect, useRef, useState } from "react";
 import { api, navigate } from "../api.js";
 import {
@@ -70,10 +72,7 @@ export default function InvestigationPage({ id, user }) {
     };
   }, [id]);
   useEffect(() => {
-    if (live)
-      setNotice(
-        "This case received an update. Refresh to load the latest evidence before saving.",
-      );
+    if (live) setNotice(en.legacy.investigationpage_001);
   }, [live]);
   async function work(name, fn) {
     setBusy(name);
@@ -90,7 +89,7 @@ export default function InvestigationPage({ id, user }) {
   async function send(e) {
     e.preventDefault();
     await work("save", async () => {
-      request.current ||= crypto.randomUUID();
+      request.current ||= requestId();
       const body = staff
         ? {
             clientId: request.current,
@@ -107,8 +106,8 @@ export default function InvestigationPage({ id, user }) {
       await refresh();
       setNotice(
         staff
-          ? "Your reviewed update was sent."
-          : "Your field update was sent for review.",
+          ? en.legacy.investigationpage_002
+          : en.legacy.investigationpage_003,
       );
     });
   }
@@ -116,12 +115,12 @@ export default function InvestigationPage({ id, user }) {
     e.preventDefault();
     await work("answers", async () => {
       await caseAction(id, "answers", {
-        clientId: crypto.randomUUID(),
+        clientId: requestId(),
         answers,
       });
       setAnswers({});
       await refresh();
-      setNotice("Your answers are saved.");
+      setNotice(en.legacy.investigationpage_004);
     });
   }
   async function analyse(kind) {
@@ -135,7 +134,7 @@ export default function InvestigationPage({ id, user }) {
       }
       await runAnalysis(id, kind, body);
       await refresh();
-      setNotice("AI output saved. Review the evidence and limitations below.");
+      setNotice(en.legacy.investigationpage_005);
     });
   }
   async function attach(value, kind = "photo") {
@@ -145,14 +144,14 @@ export default function InvestigationPage({ id, user }) {
       if (!pending) {
         const image = kind === "photo" ? await prepareImage(value) : null;
         pending = {
-          id: crypto.randomUUID(),
+          id: requestId(),
           type: "attachment",
           reportId: id,
           clientId: data.report.clientId,
           crop: data.report.crop,
           community: data.report.community,
           attachment: {
-            id: crypto.randomUUID(),
+            id: requestId(),
             kind,
             label:
               kind === "photo"
@@ -173,9 +172,7 @@ export default function InvestigationPage({ id, user }) {
         upload.current = null;
         setAudio(null);
         await refresh();
-        setNotice(
-          "Evidence added. Earlier AI results are now marked outdated.",
-        );
+        setNotice(en.legacy.investigationpage_006);
       } catch (e) {
         upload.current = null;
         throw Error(
@@ -189,7 +186,7 @@ export default function InvestigationPage({ id, user }) {
     return error ? (
       <ErrorNotice error={error} />
     ) : (
-      <Loading text="Opening investigation..." />
+      <Loading text={en.legacy.investigationpage_007} />
     );
   const r = data.report,
     photos = data.evidence.filter((e) => e.kind === "photo"),
@@ -228,7 +225,10 @@ export default function InvestigationPage({ id, user }) {
               height: (100 * (b.y2 - b.y1)) / b.h + "%",
             }}
           >
-            <span>Region {i + 1}</span>
+            <span>
+              {en.legacy.investigationpage_008}
+              {i + 1}
+            </span>
           </div>
         ))}
     </div>
@@ -255,26 +255,36 @@ export default function InvestigationPage({ id, user }) {
             ?.scrollIntoView({ behavior: "smooth", block: "center" });
         }}
       >
-        {data.evidence.find((e) => e.id === id)?.label || "Evidence"}
+        {data.evidence.find((e) => e.id === id)?.label ||
+          en.legacy.investigationpage_009}
       </button>
     );
   return (
     <div className="case-workspace">
       <button className="text-button" onClick={() => navigate("reports")}>
-        ← All crop cases
+        {en.legacy.investigationpage_010}
       </button>
       <header className="case-heading">
         <div>
           <p className="eyebrow">
-            {staff ? "INVESTIGATION WORKSPACE" : "YOUR CROP CASE"} /{" "}
-            {id.slice(0, 8).toUpperCase()}
+            {staff
+              ? en.legacy.investigationpage_011
+              : en.legacy.investigationpage_012}
+            {en.legacy.investigationpage_013} {id.slice(0, 8).toUpperCase()}
           </p>
           <h1>
-            {r.crop} <span>in {r.community}</span>
+            {r.crop}{" "}
+            <span>
+              {en.legacy.investigationpage_014}
+              {r.community}
+            </span>
           </h1>
           <p>
-            {r.owner?.name} · Reported {date(r.createdAt)} ·{" "}
-            {r.assignedTo?.name || "Awaiting officer assignment"}
+            {r.owner?.name}
+            {en.legacy.investigationpage_015}
+            {date(r.createdAt)}
+            {en.legacy.investigationpage_016}{" "}
+            {r.assignedTo?.name || en.legacy.investigationpage_017}
           </p>
         </div>
         <div>
@@ -284,7 +294,7 @@ export default function InvestigationPage({ id, user }) {
             disabled={!!busy}
             onClick={() => work("refresh", refresh)}
           >
-            Refresh case
+            {en.legacy.investigationpage_018}
           </button>
         </div>
       </header>
@@ -295,18 +305,19 @@ export default function InvestigationPage({ id, user }) {
         </div>
       )}
       <div className="case-stage">
-        <span className="complete">01 Report received</span>
+        <span className="complete">{en.legacy.investigationpage_019}</span>
         <span className={r.assignedTo ? "complete" : ""}>
-          02 Officer assigned
+          {en.legacy.investigationpage_020}
         </span>
         <span className={latestAdvice ? "complete" : ""}>
-          03 Advice reviewed
+          {en.legacy.investigationpage_021}
         </span>
         <span className={r.followupDue ? "complete" : ""}>
-          04 Follow-up {r.followupDue || ""}
+          {en.legacy.investigationpage_022}
+          {r.followupDue || ""}
         </span>
       </div>
-      <nav className="case-tabs" aria-label="Case views">
+      <nav className="case-tabs" aria-label={en.legacy.investigationpage_023}>
         {["investigation", "timeline", ...(staff ? ["review"] : [])].map(
           (t) => (
             <button
@@ -315,10 +326,10 @@ export default function InvestigationPage({ id, user }) {
               onClick={() => setTab(t)}
             >
               {t === "investigation"
-                ? "Evidence & understanding"
+                ? en.legacy.investigationpage_024
                 : t === "timeline"
-                  ? "Conversation & timeline"
-                  : "Review & next steps"}
+                  ? en.legacy.investigationpage_025
+                  : en.legacy.investigationpage_026}
             </button>
           ),
         )}
@@ -329,8 +340,11 @@ export default function InvestigationPage({ id, user }) {
             <section className="evidence-column" id="case-evidence">
               <div className="case-panel evidence-viewer">
                 <div className="panel-heading">
-                  <h2>From the field</h2>
-                  <span>{photos.length} photos</span>
+                  <h2>{en.legacy.investigationpage_027}</h2>
+                  <span>
+                    {photos.length}
+                    {en.legacy.investigationpage_028}
+                  </span>
                 </div>
                 {active?.url ? (
                   <>
@@ -339,20 +353,26 @@ export default function InvestigationPage({ id, user }) {
                         aria-pressed={zoom}
                         onClick={() => setZoom(!zoom)}
                       >
-                        {zoom ? "Fit image" : "Zoom image"}
+                        {zoom
+                          ? en.legacy.investigationpage_029
+                          : en.legacy.investigationpage_030}
                       </button>
                       <button
                         aria-pressed={boxes}
                         onClick={() => setBoxes(!boxes)}
                       >
-                        {boxes ? "Hide regions" : "Show regions"}
+                        {boxes
+                          ? en.legacy.investigationpage_031
+                          : en.legacy.investigationpage_032}
                       </button>
                       {photos.length > 1 && (
                         <button
                           aria-pressed={compare}
                           onClick={() => setCompare(!compare)}
                         >
-                          {compare ? "Single view" : "Compare dates"}
+                          {compare
+                            ? en.legacy.investigationpage_033
+                            : en.legacy.investigationpage_034}
                         </button>
                       )}
                     </div>
@@ -366,7 +386,9 @@ export default function InvestigationPage({ id, user }) {
                               <figure key={e.id}>
                                 {photoElement(e)}
                                 <figcaption>
-                                  {e.label} · {date(e.created_at)}
+                                  {e.label}
+                                  {en.legacy.investigationpage_035}
+                                  {date(e.created_at)}
                                 </figcaption>
                               </figure>
                             ))
@@ -385,44 +407,47 @@ export default function InvestigationPage({ id, user }) {
                       ))}
                     </div>
                     <p className="panel-footnote">
-                      {active.label} · {Math.round(active.media.bytes / 1024)}{" "}
-                      KB · {date(active.created_at)}. AI-selected regions are
-                      not diagnoses.
+                      {active.label}
+                      {en.legacy.investigationpage_036}
+                      {Math.round(active.media.bytes / 1024)}{" "}
+                      {en.legacy.investigationpage_037}
+                      {date(active.created_at)}
+                      {en.legacy.investigationpage_038}
                     </p>
                   </>
                 ) : (
                   <div className="evidence-placeholder">
-                    <span>◎</span>
+                    <span>{en.legacy.investigationpage_039}</span>
                     <h3>
                       {active
-                        ? "Photo link unavailable"
-                        : "No photograph attached"}
+                        ? en.legacy.investigationpage_040
+                        : en.legacy.investigationpage_041}
                     </h3>
                     <p>
                       {active
-                        ? "Refresh the case to renew access."
-                        : "A written or voice report can still start a conversation."}
+                        ? en.legacy.investigationpage_042
+                        : en.legacy.investigationpage_043}
                     </p>
                   </div>
                 )}
               </div>
               <section className="case-panel" id="case-context">
-                <p className="eyebrow">FARMER REPORTED</p>
-                <h2>What changed?</h2>
+                <p className="eyebrow">{en.legacy.investigationpage_044}</p>
+                <h2>{en.legacy.investigationpage_045}</h2>
                 <p>{r.description}</p>
                 <dl className="case-facts">
-                  <dt>First noticed</dt>
+                  <dt>{en.legacy.investigationpage_046}</dt>
                   <dd>
-                    {r.answers?.onsetKnown === "Unknown"
-                      ? "Unknown (report date retained)"
+                    {r.answers?.onsetKnown === en.legacy.investigationpage_047
+                      ? en.legacy.investigationpage_048
                       : r.onset}
                   </dd>
-                  <dt>Visible concern</dt>
+                  <dt>{en.legacy.investigationpage_049}</dt>
                   <dd>{r.symptom}</dd>
                   {Object.entries(r.answers || {}).map(([k, v]) => (
                     <React.Fragment key={k}>
                       <dt>{k.replace(/([A-Z])/g, " $1")}</dt>
-                      <dd>{v || "Not recorded"}</dd>
+                      <dd>{v || en.legacy.investigationpage_050}</dd>
                     </React.Fragment>
                   ))}
                 </dl>
@@ -430,18 +455,20 @@ export default function InvestigationPage({ id, user }) {
               {recordings.map((e) => (
                 <section className="case-panel recording-panel" key={e.id}>
                   <div className="panel-heading">
-                    <h2>Original voice note</h2>
+                    <h2>{en.legacy.investigationpage_051}</h2>
                     <Badge>{e.language}</Badge>
                   </div>
                   <audio controls preload="none" src={e.url} />
                   <p className="panel-footnote">
                     {e.language === "English"
-                      ? "Automatic transcription requires review."
-                      : "Human listening required for this language."}
+                      ? en.legacy.investigationpage_052
+                      : en.legacy.investigationpage_053}
                   </p>
                   {transcript?.evidenceId === e.id && (
                     <div className="transcript-text">
-                      <Badge tone="amber">Unreviewed transcript</Badge>
+                      <Badge tone="amber">
+                        {en.legacy.investigationpage_054}
+                      </Badge>
                       <p>{transcript.transcript}</p>
                     </div>
                   )}
@@ -452,19 +479,21 @@ export default function InvestigationPage({ id, user }) {
               <div className="case-panel ai-panel">
                 <div className="panel-heading">
                   <div>
-                    <p className="eyebrow">META AI / EVIDENCE ASSISTANCE</p>
+                    <p className="eyebrow">{en.legacy.investigationpage_055}</p>
                     <h2>
                       {staff
-                        ? "A brief you can inspect."
-                        : "What would help next?"}
+                        ? en.legacy.investigationpage_056
+                        : en.legacy.investigationpage_057}
                     </h2>
                   </div>
-                  <span className="meta-mark">∞</span>
+                  <span className="meta-mark">
+                    {en.legacy.investigationpage_058}
+                  </span>
                 </div>
                 <p>
                   {staff
-                    ? "Trace observations to their source. Review uncertainty before responding."
-                    : "A few useful observations can help your officer understand the concern."}
+                    ? en.legacy.investigationpage_059
+                    : en.legacy.investigationpage_060}
                 </p>
                 {r.crop === "Maize" ? (
                   <div className="analysis-actions">
@@ -475,12 +504,13 @@ export default function InvestigationPage({ id, user }) {
                     >
                       {busy === "investigate" || busy === "guide" ? (
                         <>
-                          <span className="spinner" /> Preparing...
+                          <span className="spinner" />
+                          {en.legacy.investigationpage_061}
                         </>
                       ) : staff ? (
-                        "Generate evidence brief"
+                        en.legacy.investigationpage_062
                       ) : (
-                        "Ask AI for useful questions"
+                        en.legacy.investigationpage_063
                       )}
                     </button>
                     {staff && (
@@ -491,8 +521,8 @@ export default function InvestigationPage({ id, user }) {
                           onClick={() => analyse("segment")}
                         >
                           {busy === "segment"
-                            ? "Locating..."
-                            : "Locate plant regions"}
+                            ? en.legacy.investigationpage_064
+                            : en.legacy.investigationpage_065}
                         </button>
                         <button
                           className="button outline"
@@ -502,33 +532,36 @@ export default function InvestigationPage({ id, user }) {
                           onClick={() => analyse("transcribe")}
                         >
                           {busy === "transcribe"
-                            ? "Transcribing..."
-                            : "Transcribe latest voice note"}
+                            ? en.legacy.investigationpage_066
+                            : en.legacy.investigationpage_067}
                         </button>
                       </>
                     )}
                   </div>
                 ) : (
                   <p className="capture-note">
-                    AI supports maize only. An officer can review this crop
-                    manually.
+                    {en.legacy.investigationpage_068}
                   </p>
                 )}
                 {brief ? (
                   <div className="linked-brief">
                     <div className="brief-meta">
-                      <Badge tone="amber">AI draft</Badge>
+                      <Badge tone="amber">
+                        {en.legacy.investigationpage_069}
+                      </Badge>
                       <small>
-                        {briefRun.result.model} ·{" "}
-                        {(briefRun.result.elapsedMs / 1000).toFixed(1)}s
+                        {briefRun.result.model}
+                        {en.legacy.investigationpage_070}{" "}
+                        {(briefRun.result.elapsedMs / 1000).toFixed(1)}
+                        {en.legacy.investigationpage_071}
                       </small>
                     </div>
                     <h3>{brief.summary}</h3>
                     {staff && (
                       <>
                         {[
-                          ["Farmer reported", brief.reported],
-                          ["Visible in evidence", brief.visible],
+                          [en.legacy.investigationpage_072, brief.reported],
+                          [en.legacy.investigationpage_073, brief.visible],
                         ].map(([title, items]) => (
                           <section key={title}>
                             <h4>{title}</h4>
@@ -542,23 +575,23 @@ export default function InvestigationPage({ id, user }) {
                                 </article>
                               ))
                             ) : (
-                              <p>No supported observations returned.</p>
+                              <p>{en.legacy.investigationpage_074}</p>
                             )}
                           </section>
                         ))}
-                        <h4>Possible explanations, not a diagnosis</h4>
+                        <h4>{en.legacy.investigationpage_075}</h4>
                         <ul>
                           {brief.possibilities.map((x, i) => (
                             <li key={i}>{x}</li>
                           ))}
                         </ul>
-                        <h4>Still unknown</h4>
+                        <h4>{en.legacy.investigationpage_076}</h4>
                         <ul>
                           {brief.unknowns.map((x, i) => (
                             <li key={i}>{x}</li>
                           ))}
                         </ul>
-                        <h4>Background reading</h4>
+                        <h4>{en.legacy.investigationpage_077}</h4>
                         {GUIDANCE.filter((g) =>
                           brief.referenceIds.includes(g.id),
                         ).map((g) => (
@@ -569,7 +602,10 @@ export default function InvestigationPage({ id, user }) {
                             target="_blank"
                             rel="noreferrer"
                           >
-                            {g.publisher} · {g.title} ↗
+                            {g.publisher}
+                            {en.legacy.investigationpage_078}
+                            {g.title}
+                            {en.legacy.investigationpage_079}
                           </a>
                         ))}
                       </>
@@ -577,11 +613,11 @@ export default function InvestigationPage({ id, user }) {
                   </div>
                 ) : (
                   <div className="brief-empty">
-                    <span>◎</span>
+                    <span>{en.legacy.investigationpage_080}</span>
                     <p>
                       {old
-                        ? "Earlier AI output is outdated because evidence changed. Generate a fresh brief."
-                        : "No current AI result. Your original evidence remains available for human review."}
+                        ? en.legacy.investigationpage_081
+                        : en.legacy.investigationpage_082}
                     </p>
                   </div>
                 )}
@@ -589,12 +625,15 @@ export default function InvestigationPage({ id, user }) {
                   <form className="guided-questions" onSubmit={answerQuestions}>
                     <p className="eyebrow">
                       {brief
-                        ? "AI-SUGGESTED QUESTIONS"
-                        : "STANDARD EVIDENCE CHECKLIST"}
+                        ? en.legacy.investigationpage_083
+                        : en.legacy.investigationpage_084}
                     </p>
                     {questions.map((q, i) => (
                       <div key={q.key}>
-                        <b>0{i + 1}</b>
+                        <b>
+                          {en.legacy.investigationpage_085}
+                          {i + 1}
+                        </b>
                         <label>
                           {q.question}
                           <small>{q.reason}</small>
@@ -608,7 +647,7 @@ export default function InvestigationPage({ id, user }) {
                                   [q.key]: e.target.value,
                                 })
                               }
-                              placeholder="Your observation, unsure, or skip"
+                              placeholder={en.legacy.investigationpage_086}
                             />
                           )}
                         </label>
@@ -622,24 +661,31 @@ export default function InvestigationPage({ id, user }) {
                           !Object.values(answers).some((v) => v.trim())
                         }
                       >
-                        Save answers
+                        {en.legacy.investigationpage_087}
                       </button>
                     )}
                   </form>
                 )}
                 <details className="run-history">
-                  <summary>Analysis history ({data.runs.length})</summary>
+                  <summary>
+                    {en.legacy.investigationpage_088}
+                    {data.runs.length}
+                    {en.legacy.investigationpage_089}
+                  </summary>
                   {data.runs.map((a) => (
                     <div key={a.id}>
                       <strong>{a.kind}</strong>
                       <Badge>
                         {a.state === "processing" &&
                         Date.now() - Date.parse(a.created_at) > 120000
-                          ? "Interrupted"
+                          ? en.legacy.investigationpage_090
                           : a.state}
                       </Badge>
                       <small>
-                        Evidence v{a.evidence_version} · {date(a.created_at)}
+                        {en.legacy.investigationpage_091}
+                        {a.evidence_version}
+                        {en.legacy.investigationpage_092}
+                        {date(a.created_at)}
                       </small>
                       {a.error && <p>{a.error}</p>}
                     </div>
@@ -647,10 +693,11 @@ export default function InvestigationPage({ id, user }) {
                 </details>
               </div>
               <section className="case-panel">
-                <p className="eyebrow">EVIDENCE CHECKLIST</p>
+                <p className="eyebrow">{en.legacy.investigationpage_093}</p>
                 <h2>
-                  {checklist.filter((c) => c.done).length} of {checklist.length}{" "}
-                  details included
+                  {checklist.filter((c) => c.done).length}
+                  {en.legacy.investigationpage_094}
+                  {checklist.length} {en.legacy.investigationpage_095}
                 </h2>
                 <ul className="capture-checklist">
                   {checklist.map((c) => (
@@ -661,8 +708,7 @@ export default function InvestigationPage({ id, user }) {
                   ))}
                 </ul>
                 <p className="panel-footnote">
-                  Completeness does not measure disease risk or diagnostic
-                  certainty.
+                  {en.legacy.investigationpage_096}
                 </p>
               </section>
             </section>
@@ -670,16 +716,16 @@ export default function InvestigationPage({ id, user }) {
           {!staff && (
             <section className="case-panel farmer-next">
               <div>
-                <p className="eyebrow">KEEP THE CASE MOVING</p>
-                <h2>Add a new observation.</h2>
-                <p>Additional evidence is shared with your assigned team.</p>
+                <p className="eyebrow">{en.legacy.investigationpage_097}</p>
+                <h2>{en.legacy.investigationpage_098}</h2>
+                <p>{en.legacy.investigationpage_099}</p>
               </div>
               <button
                 className="button outline"
                 disabled={!!busy}
                 onClick={() => file.current.click()}
               >
-                + Follow-up photograph
+                {en.legacy.investigationpage_100}
               </button>
               <input
                 className="sr-only"
@@ -697,7 +743,7 @@ export default function InvestigationPage({ id, user }) {
                   disabled={!!busy}
                   onClick={() => attach(null)}
                 >
-                  Retry attachment
+                  {en.legacy.investigationpage_101}
                 </button>
               )}
               <div className="followup-voice">
@@ -709,7 +755,7 @@ export default function InvestigationPage({ id, user }) {
                 {audio && (
                   <>
                     <label>
-                      Language
+                      {en.legacy.investigationpage_102}
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
@@ -726,7 +772,7 @@ export default function InvestigationPage({ id, user }) {
                       disabled={!!busy || voiceBusy}
                       onClick={() => attach(audio, "audio")}
                     >
-                      Send voice update
+                      {en.legacy.investigationpage_103}
                     </button>
                   </>
                 )}
@@ -738,13 +784,13 @@ export default function InvestigationPage({ id, user }) {
       {tab === "timeline" && (
         <div className="timeline-layout">
           <section className="case-panel">
-            <p className="eyebrow">CASE HISTORY</p>
-            <h2>Every observation. Every next step.</h2>
+            <p className="eyebrow">{en.legacy.investigationpage_104}</p>
+            <h2>{en.legacy.investigationpage_105}</h2>
             <ol className="event-timeline">
               <li>
                 <span className="event-dot" />
                 <div>
-                  <strong>Report submitted</strong>
+                  <strong>{en.legacy.investigationpage_106}</strong>
                   <small>{date(r.createdAt)}</small>
                   <p>{r.description}</p>
                 </div>
@@ -756,16 +802,16 @@ export default function InvestigationPage({ id, user }) {
                     <header>
                       <strong>
                         {e.body.statusChange
-                          ? "Case status updated"
+                          ? en.legacy.investigationpage_107
                           : {
-                              advice: "Reviewed advice",
-                              question: "More information requested",
-                              evidence: "Evidence added",
-                              answers: "Farmer answers",
-                              followup: "Farmer follow-up",
-                              transcript: "Reviewed transcript",
-                              region: "Region review",
-                              review: "Officer review",
+                              advice: en.legacy.investigationpage_108,
+                              question: en.legacy.investigationpage_109,
+                              evidence: en.legacy.investigationpage_110,
+                              answers: en.legacy.investigationpage_111,
+                              followup: en.legacy.investigationpage_112,
+                              transcript: en.legacy.investigationpage_113,
+                              region: en.legacy.investigationpage_114,
+                              review: en.legacy.investigationpage_115,
                             }[e.kind] || e.kind}
                       </strong>
                       <Badge tone={e.kind === "advice" ? "green" : "neutral"}>
@@ -784,9 +830,17 @@ export default function InvestigationPage({ id, user }) {
                         ))}
                       </dl>
                     )}
-                    {e.body.due && <p>Follow-up due: {e.body.due}</p>}
+                    {e.body.due && (
+                      <p>
+                        {en.legacy.investigationpage_116}
+                        {e.body.due}
+                      </p>
+                    )}
                     {e.body.outcome && (
-                      <p>Reported outcome: {e.body.outcome}</p>
+                      <p>
+                        {en.legacy.investigationpage_117}
+                        {e.body.outcome}
+                      </p>
                     )}
                   </div>
                 </li>
@@ -795,11 +849,11 @@ export default function InvestigationPage({ id, user }) {
           </section>
           {!staff && (
             <section className="case-panel">
-              <p className="eyebrow">FIELD FOLLOW-UP</p>
-              <h2>What has changed?</h2>
+              <p className="eyebrow">{en.legacy.investigationpage_118}</p>
+              <h2>{en.legacy.investigationpage_119}</h2>
               <form onSubmit={send}>
                 <label>
-                  Since your last update
+                  {en.legacy.investigationpage_120}
                   <select
                     value={outcome}
                     onChange={(e) => {
@@ -818,7 +872,7 @@ export default function InvestigationPage({ id, user }) {
                   </select>
                 </label>
                 <label>
-                  Your update
+                  {en.legacy.investigationpage_121}
                   <textarea
                     required
                     maxLength={2000}
@@ -831,7 +885,7 @@ export default function InvestigationPage({ id, user }) {
                   />
                 </label>
                 <button className="button primary" disabled={!!busy}>
-                  Send field update
+                  {en.legacy.investigationpage_122}
                 </button>
               </form>
             </section>
@@ -841,15 +895,12 @@ export default function InvestigationPage({ id, user }) {
       {tab === "review" && staff && (
         <div className="review-layout">
           <section className="case-panel">
-            <p className="eyebrow">HUMAN JUDGEMENT</p>
-            <h2>Make the next step clear.</h2>
-            <p>
-              Review original evidence before sending. Your name and update
-              become part of the case history.
-            </p>
+            <p className="eyebrow">{en.legacy.investigationpage_123}</p>
+            <h2>{en.legacy.investigationpage_124}</h2>
+            <p>{en.legacy.investigationpage_125}</p>
             <form onSubmit={send}>
               <label>
-                Type of update
+                {en.legacy.investigationpage_126}
                 <select
                   value={action}
                   onChange={(e) => {
@@ -857,21 +908,27 @@ export default function InvestigationPage({ id, user }) {
                     request.current = null;
                   }}
                 >
-                  <option value="advice">Send reviewed advice</option>
-                  <option value="question">Request more information</option>
-                  <option value="review">Record review / outcome</option>
+                  <option value="advice">
+                    {en.legacy.investigationpage_127}
+                  </option>
+                  <option value="question">
+                    {en.legacy.investigationpage_128}
+                  </option>
+                  <option value="review">
+                    {en.legacy.investigationpage_129}
+                  </option>
                   <option value="transcript">
-                    Correct transcript / human translation
+                    {en.legacy.investigationpage_130}
                   </option>
                   <option value="region">
-                    Accept or reject AI-selected region
+                    {en.legacy.investigationpage_131}
                   </option>
                 </select>
               </label>
               <label>
                 {action === "transcript"
-                  ? "Corrected text and source recording date"
-                  : "Your reviewed response"}
+                  ? en.legacy.investigationpage_132
+                  : en.legacy.investigationpage_133}
                 <textarea
                   rows={8}
                   maxLength={4000}
@@ -881,12 +938,12 @@ export default function InvestigationPage({ id, user }) {
                     setText(e.target.value);
                     request.current = null;
                   }}
-                  placeholder="Explain what the evidence supports, what remains uncertain, and the next step."
+                  placeholder={en.legacy.investigationpage_134}
                 />
               </label>
               {["advice", "review"].includes(action) && (
                 <label>
-                  Follow-up date (optional)
+                  {en.legacy.investigationpage_135}
                   <input
                     type="date"
                     min={new Date().toISOString().slice(0, 10)}
@@ -900,7 +957,7 @@ export default function InvestigationPage({ id, user }) {
               )}
               {action === "review" && (
                 <label>
-                  Review outcome
+                  {en.legacy.investigationpage_136}
                   <select
                     value={outcome}
                     onChange={(e) => {
@@ -920,15 +977,15 @@ export default function InvestigationPage({ id, user }) {
                 </label>
               )}
               <button className="button primary" disabled={!!busy}>
-                Send reviewed update ↗
+                {en.legacy.investigationpage_137}
               </button>
             </form>
           </section>
           <aside>
             <section className="case-panel">
-              <h2>Case status</h2>
+              <h2>{en.legacy.investigationpage_138}</h2>
               <label>
-                Status
+                {en.legacy.investigationpage_139}
                 <select
                   value={r.status}
                   disabled={!!busy}
@@ -957,7 +1014,7 @@ export default function InvestigationPage({ id, user }) {
                 </select>
               </label>
               <label>
-                Officer-set priority
+                {en.legacy.investigationpage_140}
                 <select
                   value={r.priority}
                   disabled={!!busy}
@@ -975,24 +1032,27 @@ export default function InvestigationPage({ id, user }) {
                     })
                   }
                 >
-                  <option value="normal">Normal</option>
-                  <option value="high">High</option>
+                  <option value="normal">
+                    {en.legacy.investigationpage_141}
+                  </option>
+                  <option value="high">
+                    {en.legacy.investigationpage_142}
+                  </option>
                 </select>
               </label>
               <p className="panel-footnote">
-                Priority is set by a person. It is not a predicted crop-loss
-                score.
+                {en.legacy.investigationpage_143}
               </p>
             </section>
             {user.role === "admin" && (
               <section className="case-panel">
-                <h2>Assign an officer</h2>
+                <h2>{en.legacy.investigationpage_144}</h2>
                 <label>
-                  Find a verified officer
+                  {en.legacy.investigationpage_145}
                   <input
                     value={officerQuery}
                     onChange={(e) => setOfficerQuery(e.target.value)}
-                    placeholder="Name or email"
+                    placeholder={en.legacy.investigationpage_146}
                   />
                 </label>
                 <button
@@ -1015,15 +1075,15 @@ export default function InvestigationPage({ id, user }) {
                     )
                   }
                 >
-                  Find officers
+                  {en.legacy.investigationpage_147}
                 </button>
                 <label>
-                  Assignment
+                  {en.legacy.investigationpage_148}
                   <select
                     value={officer}
                     onChange={(e) => setOfficer(e.target.value)}
                   >
-                    <option value="">Unassigned</option>
+                    <option value="">{en.legacy.investigationpage_149}</option>
                     {officers.map((o) => (
                       <option key={o.id} value={o.id}>
                         {o.name}
@@ -1047,7 +1107,7 @@ export default function InvestigationPage({ id, user }) {
                     })
                   }
                 >
-                  Save assignment
+                  {en.legacy.investigationpage_150}
                 </button>
               </section>
             )}
@@ -1056,14 +1116,20 @@ export default function InvestigationPage({ id, user }) {
       )}
       {latestAdvice && tab !== "timeline" && !staff && (
         <section className="case-panel reviewed-advice">
-          <Badge tone="green">Reviewed by {latestAdvice.actor_name}</Badge>
-          <h2>Your next steps</h2>
+          <Badge tone="green">
+            {en.legacy.investigationpage_151}
+            {latestAdvice.actor_name}
+          </Badge>
+          <h2>{en.legacy.investigationpage_152}</h2>
           <p>{latestAdvice.body.text}</p>
           {latestAdvice.body.due && (
-            <strong>Follow up by {latestAdvice.body.due}</strong>
+            <strong>
+              {en.legacy.investigationpage_153}
+              {latestAdvice.body.due}
+            </strong>
           )}
           <button className="button outline" onClick={() => setTab("timeline")}>
-            Reply with an update
+            {en.legacy.investigationpage_154}
           </button>
         </section>
       )}

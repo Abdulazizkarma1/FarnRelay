@@ -1,1 +1,10 @@
-.legal-copy section{margin:24px 0}.legal-copy h2{font-size:20px}.legal-copy p{font-size:16px;line-height:1.8}
+.legal-copy section {
+  margin: 24px 0;
+}
+.legal-copy h2 {
+  font-size: 20px;
+}
+.legal-copy p {
+  font-size: 16px;
+  line-height: 1.8;
+}

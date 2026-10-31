@@ -1,3 +1,5 @@
+import { en } from "./i18n/en.js";
+import { requestId } from "./id.js";
 export const photos = {
   landscape: "/images/landscape.webp",
   tomatoes: "/images/tomatoes.webp",
@@ -19,28 +21,28 @@ export const statuses = [
 export function evidenceChecks(report) {
   return [
     {
-      label: "Crop identified",
+      label: en.legacy.lib_1001,
       weight: 10,
       passed: Boolean(report.crop && report.crop !== "Other"),
     },
     {
-      label: "Community recorded",
+      label: en.legacy.lib_1002,
       weight: 15,
       passed: Boolean(report.community?.trim()),
     },
-    { label: "Observation date", weight: 15, passed: Boolean(report.onset) },
+    { label: en.legacy.lib_1003, weight: 15, passed: Boolean(report.onset) },
     {
-      label: "Visible symptom",
+      label: en.legacy.lib_1004,
       weight: 15,
       passed: Boolean(report.symptom && report.symptom !== "Other"),
     },
     {
-      label: "Description of at least 25 characters",
+      label: en.legacy.lib_1005,
       weight: 20,
       passed: (report.description?.trim().length || 0) >= 25,
     },
     {
-      label: "Own crop photo attached",
+      label: en.legacy.lib_1006,
       weight: 25,
       passed: Boolean(report.photoDataUrl),
     },
@@ -127,18 +129,5 @@ export async function prepareImage(file) {
   };
 }
 export function newReportId() {
-  if (crypto.randomUUID) return crypto.randomUUID();
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  bytes[6] = (bytes[6] & 15) | 64;
-  bytes[8] = (bytes[8] & 63) | 128;
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join(
-    "",
-  );
-  return [
-    hex.slice(0, 8),
-    hex.slice(8, 12),
-    hex.slice(12, 16),
-    hex.slice(16, 20),
-    hex.slice(20),
-  ].join("-");
+  return requestId();
 }

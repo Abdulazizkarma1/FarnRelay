@@ -1,3 +1,4 @@
+import { requestId } from "./id.js";
 import { createAuthFetch } from "./auth-fetch.js";
 import { createClient } from "@supabase/supabase-js";
 const url = import.meta.env.VITE_SUPABASE_URL;
@@ -9,7 +10,7 @@ export function getSupabase() {
       "Supabase is not configured. Add the project URL and publishable key in Netlify, then rebuild.",
     );
   return (client ||= createClient(url, key, {
-    global: {fetch:createAuthFetch()},
+    global: { fetch: createAuthFetch() },
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -21,7 +22,7 @@ export function getSupabase() {
 export function subscribeToWorkspace(onChange) {
   const db = getSupabase();
   const channel = db
-    .channel("workspace-" + crypto.randomUUID())
+    .channel("workspace-" + requestId())
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "notifications" },

@@ -1,3 +1,4 @@
+import { en } from "../i18n/en.js";
 import { useLiveRefresh } from "../useLiveRefresh.js";
 import React, { useEffect, useState, useCallback } from "react";
 import { api, navigate } from "../api.js";
@@ -45,9 +46,9 @@ export function NewReport({ user, onNotice, initialReport }) {
   return (
     <>
       <PageTitle
-        eyebrow="NEW FIELD OBSERVATION"
-        title="Bring the field into focus."
-        description="Share what changed. You do not need to know the cause."
+        eyebrow={en.legacy.reportspage_001}
+        title={en.legacy.reportspage_002}
+        description={en.legacy.reportspage_003}
       />
       <ReportForm
         initialReport={initialReport}
@@ -55,8 +56,8 @@ export function NewReport({ user, onNotice, initialReport }) {
         progress={progress}
         onSave={save}
         onCancel={() => navigate("drafts")}
-        submitLabel="Submit report"
-        reviewCopy="Submitting shares this report, photo and recording with authorised extension staff. Meta AI may assist their review. A local draft is kept if the connection fails."
+        submitLabel={en.legacy.reportspage_004}
+        reviewCopy={en.legacy.reportspage_005}
       />
     </>
   );
@@ -105,36 +106,38 @@ export default function ReportsPage({ user, initialQuery = "" }) {
       <PageTitle
         eyebrow={
           user.role === "farmer"
-            ? "YOUR FIELD JOURNAL"
-            : "SHARED CASE WORKSPACE"
+            ? en.legacy.reportspage_006
+            : en.legacy.reportspage_007
         }
         title={
           user.role === "farmer"
-            ? "Every observation matters."
-            : "From evidence to a response."
+            ? en.legacy.reportspage_008
+            : en.legacy.reportspage_009
         }
         description={
           user.role === "farmer"
-            ? "Track your submitted reports and continue the conversation."
+            ? en.legacy.reportspage_010
             : user.role === "officer"
-              ? "Only cases assigned to you appear in this workspace."
-              : "Review reports and assign an extension officer to each case."
+              ? en.legacy.reportspage_011
+              : en.legacy.reportspage_012
         }
       >
         {user.role === "farmer" && (
           <button className="button primary" onClick={() => navigate("new")}>
             <Icon name="plus" size={17} />
-            New report
+            {en.legacy.reportspage_013}
           </button>
         )}
       </PageTitle>
-      <div className="queue-tabs" aria-label="Case queues">
+      <div className="queue-tabs" aria-label={en.legacy.reportspage_014}>
         {[
-          ["all", "All cases"],
-          ["due", "Follow-up due"],
-          ["waiting", "Waiting for information"],
-          ["recent", "Updated in 24h"],
-          ...(user.role === "admin" ? [["unassigned", "Unassigned"]] : []),
+          ["all", en.legacy.reportspage_015],
+          ["due", en.legacy.reportspage_016],
+          ["waiting", en.legacy.reportspage_017],
+          ["recent", en.legacy.reportspage_018],
+          ...(user.role === "admin"
+            ? [["unassigned", en.legacy.reportspage_019]]
+            : []),
         ].map(([value, label]) => (
           <button
             key={value}
@@ -158,16 +161,16 @@ export default function ReportsPage({ user, initialQuery = "" }) {
         >
           <Icon name="search" size={17} />
           <input
-            aria-label="Search crop or community"
-            placeholder="Search crop or community..."
+            aria-label={en.legacy.reportspage_020}
+            placeholder={en.legacy.reportspage_021}
             maxLength={100}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="text-button">Search</button>
+          <button className="text-button">{en.legacy.reportspage_022}</button>
         </form>
         <label>
-          <span className="sr-only">Review status</span>
+          <span className="sr-only">{en.legacy.reportspage_023}</span>
           <select
             value={status}
             onChange={(e) => {
@@ -175,7 +178,7 @@ export default function ReportsPage({ user, initialQuery = "" }) {
               setPage(1);
             }}
           >
-            <option value="">All statuses</option>
+            <option value="">{en.legacy.reportspage_024}</option>
             {["Needs review", "In review", "Follow-up needed", "Closed"].map(
               (s) => (
                 <option key={s}>{s}</option>
@@ -186,17 +189,19 @@ export default function ReportsPage({ user, initialQuery = "" }) {
       </div>
       <ErrorNotice error={error} />
       {busy ? (
-        <Loading text="Loading crop reports..." />
+        <Loading text={en.legacy.reportspage_025} />
       ) : data?.items.length ? (
         <>
           <div className="case-register">
             <div className="case-register-head">
-              <span>Crop observation</span>
-              <span>Community</span>
+              <span>{en.legacy.reportspage_026}</span>
+              <span>{en.legacy.reportspage_027}</span>
               <span>
-                {user.role === "farmer" ? "Assigned officer" : "Reported by"}
+                {user.role === "farmer"
+                  ? en.legacy.reportspage_028
+                  : en.legacy.reportspage_029}
               </span>
-              <span>Review status</span>
+              <span>{en.legacy.reportspage_030}</span>
               <span />
             </div>
             {data.items.map((r) => (
@@ -212,16 +217,26 @@ export default function ReportsPage({ user, initialQuery = "" }) {
                   <span>
                     <strong>{r.crop}</strong>
                     <small>
-                      {r.symptom} · <DateText value={r.createdAt} />
+                      {r.symptom}
+                      {en.legacy.reportspage_031}
+                      <DateText value={r.createdAt} />
                     </small>
-                    {r.followupDue && <small>Follow-up: {r.followupDue}</small>}
+                    {r.followupDue && (
+                      <small>
+                        {en.legacy.reportspage_032}
+                        {r.followupDue}
+                      </small>
+                    )}
                     {r.evidenceCount > 0 && (
-                      <small>{r.evidenceCount} evidence attachments</small>
+                      <small>
+                        {r.evidenceCount}
+                        {en.legacy.reportspage_033}
+                      </small>
                     )}
                     {r.audio?.bytes > 0 && (
                       <em>
                         <Icon name="mic" size={11} />
-                        Voice note
+                        {en.legacy.reportspage_034}
                       </em>
                     )}
                   </span>
@@ -229,8 +244,8 @@ export default function ReportsPage({ user, initialQuery = "" }) {
                 <span>{r.community}</span>
                 <span>
                   {user.role === "farmer"
-                    ? r.assignedTo?.name || "Awaiting assignment"
-                    : r.owner?.name || "Farmer"}
+                    ? r.assignedTo?.name || en.legacy.reportspage_035
+                    : r.owner?.name || en.legacy.reportspage_036}
                 </span>
                 <Badge>{r.status}</Badge>
                 <Icon name="arrow" size={16} />
@@ -241,8 +256,8 @@ export default function ReportsPage({ user, initialQuery = "" }) {
         </>
       ) : (
         <Empty
-          title="No reports in this view."
-          description="Try another filter, or return when a report is submitted or assigned."
+          title={en.legacy.reportspage_037}
+          description={en.legacy.reportspage_038}
         />
       )}
     </>
@@ -256,7 +271,7 @@ export function DraftsPage({ user, onNotice }) {
     try {
       setDrafts(await getDrafts(user.id));
     } catch (e) {
-      setError("Device storage is unavailable.");
+      setError(en.legacy.reportspage_039);
     }
   }
   useEffect(() => {
@@ -283,20 +298,20 @@ export function DraftsPage({ user, onNotice }) {
   return (
     <>
       <PageTitle
-        eyebrow="SAVED ON THIS DEVICE"
-        title="Ready when your connection is."
-        description="These drafts have not been confirmed as submitted. They are private to this account on this browser."
+        eyebrow={en.legacy.reportspage_040}
+        title={en.legacy.reportspage_041}
+        description={en.legacy.reportspage_042}
       />
       <ErrorNotice error={error} />
       {drafts === null ? (
         <Loading />
       ) : !drafts.length ? (
         <Empty
-          title="No unsent drafts."
-          description="If a report cannot be sent, it stays here so you can try again."
+          title={en.legacy.reportspage_043}
+          description={en.legacy.reportspage_044}
           action={
             <button className="button outline" onClick={() => navigate("new")}>
-              Start a report
+              {en.legacy.reportspage_045}
             </button>
           }
         />
@@ -311,17 +326,19 @@ export function DraftsPage({ user, onNotice }) {
                     r.evidence?.find((e) => e.kind === "photo")?.dataUrl ||
                     r.photoDataUrl
                   }
-                  alt="Draft crop photograph"
+                  alt={en.legacy.reportspage_046}
                 />
               )}
               <div>
-                <Badge tone="amber">Device draft</Badge>
+                <Badge tone="amber">{en.legacy.reportspage_047}</Badge>
                 <h2>{r.crop}</h2>
                 <p>
-                  {r.community} · <DateText value={r.savedAt} />
+                  {r.community}
+                  {en.legacy.reportspage_048}
+                  <DateText value={r.savedAt} />
                 </p>
                 <p className="draft-description">
-                  {r.description || "Voice recording attached"}
+                  {r.description || en.legacy.reportspage_049}
                 </p>
                 <div className="draft-actions">
                   <button
@@ -342,10 +359,12 @@ export function DraftsPage({ user, onNotice }) {
                       }
                     }}
                   >
-                    {r.reportId ? "Retry saved submission" : "Review & send"}
+                    {r.reportId
+                      ? en.legacy.reportspage_050
+                      : en.legacy.reportspage_051}
                   </button>
                   <button className="button subtle" onClick={() => discard(r)}>
-                    Remove
+                    {en.legacy.reportspage_052}
                   </button>
                 </div>
               </div>
@@ -353,11 +372,7 @@ export function DraftsPage({ user, onNotice }) {
           ))}
         </div>
       )}
-      <p className="draft-note">
-        Drafts are not available on other devices. Clearing this browser’s
-        storage removes them. Submitted reports are stored securely on the
-        server.
-      </p>
+      <p className="draft-note">{en.legacy.reportspage_053}</p>
     </>
   );
 }

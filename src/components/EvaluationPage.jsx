@@ -1,21 +1,22 @@
+import { en } from "../i18n/en.js";
 import React, { useState } from "react";
 import { evaluateRows } from "../evaluation.js";
 import { PageTitle, ErrorNotice, Badge } from "./UI.jsx";
 import "./EvaluationPage.css";
 const SOURCES = [
   [
-    "KaraAgro AI Maize",
-    "Ghana-relevant maize examples. Verify files, annotations and grouping before benchmarking.",
+    en.legacy.evaluationpage_1001,
+    en.legacy.evaluationpage_1002,
     "https://doi.org/10.7910/DVN/CXUMDS",
   ],
   [
-    "PlantVillage",
-    "Supplementary image checks. Controlled images do not establish field accuracy.",
+    en.legacy.evaluationpage_1003,
+    en.legacy.evaluationpage_1004,
     "https://github.com/spMohanty/PlantVillage-Dataset",
   ],
   [
-    "PlantDoc",
-    "Varied imagery for robustness checks. Review provenance and reuse conditions.",
+    en.legacy.evaluationpage_1005,
+    en.legacy.evaluationpage_1006,
     "https://github.com/pratikkayal/PlantDoc-Dataset",
   ],
 ];
@@ -65,29 +66,21 @@ export default function EvaluationPage() {
   return (
     <div className="evaluation-page">
       <PageTitle
-        eyebrow="MEASURE BEFORE YOU CLAIM"
-        title="Evidence about the evidence."
-        description="A transparent evaluation workspace. Imported results stay in this browser and are never sent to Meta."
+        eyebrow={en.legacy.evaluationpage_001}
+        title={en.legacy.evaluationpage_002}
+        description={en.legacy.evaluationpage_003}
       />
       <div className="evaluation-banner">
-        <Badge tone="amber">Field validation pending</Badge>
-        <p>
-          No diagnostic accuracy, crop recovery or farmer adoption result is
-          claimed by this release. Software tests verify workflow contracts and
-          permissions.
-        </p>
+        <Badge tone="amber">{en.legacy.evaluationpage_004}</Badge>
+        <p>{en.legacy.evaluationpage_005}</p>
       </div>
       <div className="evaluation-columns">
         <section className="surface-card">
-          <p className="eyebrow">REPRODUCIBLE BENCHMARK</p>
-          <h2>Bring your reviewed results.</h2>
-          <p>
-            Import a JSON array with unique caseId, expected and predicted
-            labels. Optional fields: abstained, unsupportedClaim, reviewSeconds,
-            baselineSeconds, elapsedMs, uploadBytes, recoveredUpload.
-          </p>
+          <p className="eyebrow">{en.legacy.evaluationpage_006}</p>
+          <h2>{en.legacy.evaluationpage_007}</h2>
+          <p>{en.legacy.evaluationpage_008}</p>
           <label className="evaluation-upload">
-            Choose evaluation JSON
+            {en.legacy.evaluationpage_009}
             <input
               type="file"
               accept="application/json,.json"
@@ -97,30 +90,30 @@ export default function EvaluationPage() {
           <ErrorNotice error={error} />
           {result && (
             <>
-              <Badge>Imported data / unverified</Badge>
+              <Badge>{en.legacy.evaluationpage_010}</Badge>
               <div className="evaluation-metrics">
                 {[
-                  ["Cases", result.count],
-                  ["Answered accuracy", percent(result.accuracy)],
-                  ["Coverage", percent(result.coverage)],
+                  [en.legacy.evaluationpage_011, result.count],
+                  [en.legacy.evaluationpage_012, percent(result.accuracy)],
+                  [en.legacy.evaluationpage_013, percent(result.coverage)],
                   [
-                    "Unsupported claims",
+                    en.legacy.evaluationpage_014,
                     `${result.unsupported} / ${result.claimReviewed} reviewed`,
                   ],
                   [
-                    "Recovered uploads",
+                    en.legacy.evaluationpage_015,
                     `${result.recovered} / ${result.recoveryTested} tested`,
                   ],
                   [
-                    "Median review time",
+                    en.legacy.evaluationpage_016,
                     result.medianReviewSeconds === null
-                      ? "Not evaluated"
+                      ? en.legacy.evaluationpage_017
                       : result.medianReviewSeconds + "s",
                   ],
                   [
-                    "Median baseline time",
+                    en.legacy.evaluationpage_018,
                     result.medianBaselineSeconds === null
-                      ? "Not evaluated"
+                      ? en.legacy.evaluationpage_019
                       : result.medianBaselineSeconds + "s",
                   ],
                 ].map(([k, v]) => (
@@ -131,18 +124,19 @@ export default function EvaluationPage() {
                 ))}
               </div>
               <button className="button primary" onClick={download}>
-                Export evaluation report
+                {en.legacy.evaluationpage_020}
               </button>
             </>
           )}
         </section>
         <section className="surface-card">
-          <p className="eyebrow">DATASET REGISTER</p>
-          <h2>Sources and limitations</h2>
+          <p className="eyebrow">{en.legacy.evaluationpage_021}</p>
+          <h2>{en.legacy.evaluationpage_022}</h2>
           {SOURCES.map(([name, note, url]) => (
             <article className="dataset-source" key={name}>
               <a href={url} target="_blank" rel="noreferrer">
-                {name} ↗
+                {name}
+                {en.legacy.evaluationpage_023}
               </a>
               <p>{note}</p>
             </article>
@@ -150,39 +144,21 @@ export default function EvaluationPage() {
         </section>
       </div>
       <section className="surface-card evaluation-protocol">
-        <h2>Evaluation protocol</h2>
+        <h2>{en.legacy.evaluationpage_024}</h2>
         <ol>
-          <li>
-            Separate development cases from final evaluation. Keep related
-            photographs together.
-          </li>
-          <li>
-            Compare the same reporting task with a basic photo-and-message
-            baseline. Counterbalance reviewer order.
-          </li>
-          <li>
-            Include unclear images and unsupported inputs. Report coverage
-            alongside accuracy.
-          </li>
-          <li>
-            Have a qualified reviewer assess unsupported claims and advice.
-            Record disagreements.
-          </li>
-          <li>
-            Record model and prompt versions, sample size, latency and upload
-            conditions.
-          </li>
-          <li>
-            Publish failures and limitations. Public datasets may have appeared
-            in foundation-model training.
-          </li>
+          <li>{en.legacy.evaluationpage_025}</li>
+          <li>{en.legacy.evaluationpage_026}</li>
+          <li>{en.legacy.evaluationpage_027}</li>
+          <li>{en.legacy.evaluationpage_028}</li>
+          <li>{en.legacy.evaluationpage_029}</li>
+          <li>{en.legacy.evaluationpage_030}</li>
         </ol>
         <a
           href="https://github.com/Abdulazizkarma1/FarnRelay"
           target="_blank"
           rel="noreferrer"
         >
-          Source code and verification documentation ↗
+          {en.legacy.evaluationpage_031}
         </a>
       </section>
     </div>

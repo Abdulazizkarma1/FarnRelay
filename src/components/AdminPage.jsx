@@ -1,4 +1,4 @@
-import {en} from "../i18n/en.js";
+import { en } from "../i18n/en.js";
 import React, { useEffect, useRef, useState } from "react";
 import { api, navigate } from "../api.js";
 import {
@@ -85,14 +85,14 @@ export default function AdminPage({ user, mode }) {
   if (!user.mfaEnabled)
     return (
       <Empty
-        title="Protect your admin account first."
-        description="Enable your authenticator to manage permissions and view the audit log."
+        title={en.legacy.adminpage_001}
+        description={en.legacy.adminpage_002}
         action={
           <button
             className="button primary"
             onClick={() => navigate("account")}
           >
-            Open security settings
+            {en.legacy.adminpage_003}
           </button>
         }
       />
@@ -100,16 +100,12 @@ export default function AdminPage({ user, mode }) {
   return (
     <>
       <PageTitle
-        eyebrow="ADMINISTRATION"
+        eyebrow={en.legacy.adminpage_004}
         title={
-          mode === "audit"
-            ? "A clear record of action."
-            : "The people behind FarmRelay."
+          mode === "audit" ? en.legacy.adminpage_005 : en.legacy.adminpage_006
         }
         description={
-          mode === "audit"
-            ? "Review access changes, case activity and model requests."
-            : "Manage farmer and officer access. Role changes revoke existing sessions."
+          mode === "audit" ? en.legacy.adminpage_007 : en.legacy.adminpage_008
         }
       />
       <ErrorNotice error={!selected && error} />
@@ -124,23 +120,23 @@ export default function AdminPage({ user, mode }) {
           >
             <Icon name="search" size={17} />
             <input
-              aria-label="Search users"
-              placeholder="Search name or email..."
+              aria-label={en.legacy.adminpage_009}
+              placeholder={en.legacy.adminpage_010}
               value={query}
               maxLength={100}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <button className="text-button">Search</button>
+            <button className="text-button">{en.legacy.adminpage_011}</button>
           </form>
           <select
-            aria-label="Filter account role"
+            aria-label={en.legacy.adminpage_012}
             value={role}
             onChange={(e) => {
               setRole(e.target.value);
               setPage(1);
             }}
           >
-            <option value="">All roles</option>
+            <option value="">{en.legacy.adminpage_013}</option>
             {["farmer", "officer", "admin"].map((r) => (
               <option key={r}>{r}</option>
             ))}
@@ -169,12 +165,17 @@ export default function AdminPage({ user, mode }) {
                           .replaceAll("_", " ")}
                       </strong>
                       <p>
-                        {item.actorName} · <DateText value={item.createdAt} />
+                        {item.actorName}
+                        {en.legacy.adminpage_014}
+                        <DateText value={item.createdAt} />
                       </p>
-                      <small>Target: {item.target}</small>
+                      <small>
+                        {en.legacy.adminpage_015}
+                        {item.target}
+                      </small>
                       {Object.keys(item.details || {}).length > 0 && (
                         <details>
-                          <summary>Details</summary>
+                          <summary>{en.legacy.adminpage_016}</summary>
                           <pre>{JSON.stringify(item.details, null, 2)}</pre>
                         </details>
                       )}
@@ -192,22 +193,26 @@ export default function AdminPage({ user, mode }) {
                     </div>
                     <Badge>{u.role}</Badge>
                     <Badge tone={u.active ? "green" : "neutral"}>
-                      {u.active ? "Active" : "Suspended"}
+                      {u.active
+                        ? en.legacy.adminpage_017
+                        : en.legacy.adminpage_018}
                     </Badge>
                     <span className="verification-label">
-                      {u.verified ? "Email verified" : "Unverified email"}
+                      {u.verified
+                        ? en.legacy.adminpage_019
+                        : en.legacy.adminpage_020}
                     </span>
                     {u.role !== "admin" ? (
                       <button
                         className="button subtle"
                         onClick={() => setSelected(u)}
                       >
-                        Manage
+                        {en.legacy.adminpage_021}
                       </button>
                     ) : (
                       <span className="admin-protected">
                         <Icon name="shield" size={15} />
-                        Protected
+                        {en.legacy.adminpage_022}
                       </span>
                     )}
                   </div>
@@ -217,8 +222,8 @@ export default function AdminPage({ user, mode }) {
         </>
       ) : (
         <Empty
-          title="No records found."
-          description="Try a different search or filter."
+          title={en.legacy.adminpage_023}
+          description={en.legacy.adminpage_024}
         />
       )}
       <dialog
@@ -227,47 +232,46 @@ export default function AdminPage({ user, mode }) {
         onCancel={() => setSelected(null)}
       >
         <div className="access-dialog-header">
-          <span className="eyebrow">ACCOUNT PERMISSIONS</span>
+          <span className="eyebrow">{en.legacy.adminpage_025}</span>
           <button
-            aria-label="Close access editor"
+            aria-label={en.legacy.adminpage_026}
             disabled={busy}
             onClick={() => setSelected(null)}
           >
-            ×
+            {en.legacy.adminpage_027}
           </button>
         </div>
         {selected && (
           <>
             <h2>{selected.name}</h2>
-            <p>{selected.email}</p>{selected.requestedRole==="officer"&&selected.role==="farmer"&&<p>{en.auth.officerRequested}</p>}
+            <p>{selected.email}</p>
+            {selected.requestedRole === "officer" &&
+              selected.role === "farmer" && <p>{en.auth.officerRequested}</p>}
             <ErrorNotice error={error} />
             <form onSubmit={save}>
               <label>
-                Account role
+                {en.legacy.adminpage_028}
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
                 >
-                  <option value="farmer">Farmer: own reports only</option>
+                  <option value="farmer">{en.legacy.adminpage_029}</option>
                   <option value="officer" disabled={!selected.verified}>
-                    Officer: assigned reports only
+                    {en.legacy.adminpage_030}
                   </option>
                 </select>
               </label>
               <label>
-                Account status
+                {en.legacy.adminpage_031}
                 <select
                   value={active ? "active" : "suspended"}
                   onChange={(e) => setActive(e.target.value === "active")}
                 >
-                  <option value="active">Active</option>
-                  <option value="suspended">Suspended</option>
+                  <option value="active">{en.legacy.adminpage_032}</option>
+                  <option value="suspended">{en.legacy.adminpage_033}</option>
                 </select>
               </label>
-              <p className="access-warning">
-                Saving revokes this person’s current sessions. Changes are
-                recorded in the audit log. Existing reports are retained.
-              </p>
+              <p className="access-warning">{en.legacy.adminpage_034}</p>
               <div className="access-dialog-actions">
                 <button
                   type="button"
@@ -275,10 +279,10 @@ export default function AdminPage({ user, mode }) {
                   disabled={busy}
                   onClick={() => setSelected(null)}
                 >
-                  Cancel
+                  {en.legacy.adminpage_035}
                 </button>
                 <button className="button primary" disabled={busy}>
-                  Save access changes
+                  {en.legacy.adminpage_036}
                 </button>
               </div>
             </form>
@@ -287,7 +291,7 @@ export default function AdminPage({ user, mode }) {
               disabled={busy}
               onClick={revoke}
             >
-              Revoke sessions without changing role
+              {en.legacy.adminpage_037}
             </button>
           </>
         )}

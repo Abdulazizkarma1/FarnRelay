@@ -8,7 +8,7 @@ Keep Row Level Security enabled. Keep `crop-evidence` private. Do not add broad 
 
 ## 2. Configure Supabase Auth
 
-Enable email/password accounts and email confirmation. Set a minimum password length of 12 in Auth settings, not just in the frontend. Enable TOTP MFA. Set the Site URL to the exact frontend origin. Add only trusted staging/production redirect origins. Configure custom SMTP and test delivery before signup. New free Supabase projects using default SMTP cannot edit email templates, so custom SMTP is required for the token-hash templates below. The default mail service is not a production mail setup. Configure Auth rate limits and bot protection for the expected audience.
+Enable email/password accounts and email confirmation. Set a minimum password length of 15 in Auth settings, not just in the frontend. Enable TOTP MFA. Set the Site URL to the exact frontend origin. Add only trusted staging/production redirect origins. Configure custom SMTP and test delivery before signup. New free Supabase projects using default SMTP cannot edit email templates, so custom SMTP is required for the token-hash templates below. The default mail service is not a production mail setup. Configure Auth rate limits and bot protection for the expected audience.
 
 The app uses token-hash verification links and does not automatically process arbitrary URL sessions. Set these templates in Supabase Auth:
 
@@ -114,3 +114,7 @@ Remove localhost from the production project redirect allowlist. Use a separate 
 Default ConfirmationURL email templates use the explicit PKCE callback. The user presses Continue securely to exchange the code. The callback removes the code from the address bar and never enables automatic implicit token handling. PKCE links need the original requesting browser's stored verifier. Token-hash templates above remain supported for cross-browser use when custom SMTP/template editing is available.
 
 After changing URL settings, request a fresh email from the live site. Do not reuse an old localhost link or a consumed code. Test signup verification, password reset, expired links and MFA-protected recovery before announcing public availability. Verify the mail provider's delivery limits and custom SMTP configuration separately.
+
+## Onboarding auth gateway
+
+The new auth function validates signup/login/resend/recovery and uses the service-only `farmrelay_auth_limit` RPC. The reviewed onboarding migration has been applied to the connected project. Prefer a modern secret key and enable Supabase Auth IP Address Forwarding for trusted Netlify Context.ip forwarding. See [ONBOARDING.md](ONBOARDING.md) for the complete operator requirements and remaining hosted tests.
