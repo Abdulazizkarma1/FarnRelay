@@ -8,7 +8,11 @@ import {
 const reply = (body, status = 200, extra = {}) =>
   Response.json(body, {
     status,
-    headers: { "Cache-Control": "no-store", ...extra },
+    headers: {
+      "Cache-Control": "no-store",
+      "X-Supabase-Api-Version": "2024-01-01",
+      ...extra,
+    },
   });
 export function createAuthHandler({
   env = process.env,
@@ -125,6 +129,7 @@ export function createAuthHandler({
       if (redirectUrl) target.searchParams.set("redirect_to", redirectUrl.href);
       const providerHeaders = {
         apikey: env.SUPABASE_PUBLISHABLE_KEY,
+        "X-Supabase-Api-Version": "2024-01-01",
         "Content-Type": "application/json",
       };
       if (env.SUPABASE_SECRET_KEY.startsWith("sb_secret_")) {

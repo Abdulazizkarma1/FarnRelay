@@ -249,3 +249,30 @@ test("report summary is never treated as a single report needing media attachmen
     true,
   );
 });
+
+// Exercise the real SDK parser: it ignores modern error codes without a version header.
+test("gateway preserves unverified-login error codes for the Supabase SDK", async () => {
+  const { createClient } = await import("@supabase/supabase-js");
+  const handler = createAuthHandler({
+    env,
+    clientFactory: () => ({ rpc: async () => ({}) }),
+    fetcher: async () =>
+      Response.json(
+        { code: "email_not_confirmed", msg: "Email not confirmed" },
+        { status: 400 },
+      ),
+  });
+  const client = createClient(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: createAuthFetch(async (_url, init) =>
+        handler(request(JSON.parse(init.body)), { ip: "192.0.2.1" }),
+      ),
+    },
+  });
+  const { error } = await client.auth.signInWithPassword({
+    email: good.email,
+    password: good.password,
+  });
+  assert.equal(error.code, "email_not_confirmed");
+});

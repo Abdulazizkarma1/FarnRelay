@@ -28,6 +28,7 @@ async function mockAuth(page) {
         headers: {
           "access-control-allow-origin": "*",
           "content-type": "application/json",
+          "x-supabase-api-version": "2024-01-01",
         },
         body: result.body === null ? "" : JSON.stringify(result.body),
       });
