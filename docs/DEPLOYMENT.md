@@ -95,3 +95,9 @@ The production build generates `sw.js` from its exact asset manifest. It caches 
 Confirm the configured Meta response model, SAM and voice model are enabled for the project before the demonstration. Model defaults are adapter configuration, not a promise of access. Netlify must allow function duration long enough for the 45-second upstream timeout; the browser waits at most 65 seconds. A shorter host timeout can leave a processing run until the two-minute interruption window permits retry. Set spending controls in the provider account.
 
 The migration filenames match the versions recorded by the connected migration tool on the hosted staging project. Their SQL content is unchanged from the reviewed build. This keeps later CLI migration pushes from trying to recreate the schema.
+
+## Netlify secret scan: public project URL
+
+`SUPABASE_URL` is an HTTPS project origin, not a credential. Its value intentionally also appears in the public Vite client, generated CSP and staging documentation. `netlify.toml` omits only this variable name from value-based secret scanning to avoid a false positive. Secret scanning stays enabled for Meta and Supabase secret keys. Never place a database connection string, password or key in `SUPABASE_URL`.
+
+If a site-level `SECRETS_SCAN_OMIT_KEYS` value overrides the repository setting, include `SUPABASE_URL` in that list. Do not disable scanning or exclude the build directory. Redeploy the latest main commit after this configuration change.
