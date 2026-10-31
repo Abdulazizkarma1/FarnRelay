@@ -6,7 +6,7 @@ Implementation checked on 30 October 2026. Release 3.0.0.
 
 | Check                         | Result                        | Scope                                                                          |
 | ----------------------------- | ----------------------------- | ------------------------------------------------------------------------------ |
-| Automated suite               | 32 passing tests              | Embedded PostgreSQL and mocked model/function contracts                        |
+| Automated suite               | 35 passing tests              | Embedded PostgreSQL and mocked model/function contracts                        |
 | Configured production build   | Passed                        | Vite build with placeholder public Supabase configuration                      |
 | Dependency audit              | Zero reported vulnerabilities | `npm audit --audit-level=high` on the committed lockfile                       |
 | Public browser walkthrough    | Checked                       | Landing page, crop entry, evidence step, field context and review state        |
@@ -37,3 +37,7 @@ No live frontend cutover is claimed. End-to-end hosted Auth, SMTP email links, S
 The officer screen compiles, but a full hosted multi-account browser walkthrough remains pending. The browser preview became unavailable when resuming the final visual check; no successful officer browser test is claimed.
 
 CI status must be read from the pull request's actual workflow run. Local success does not guarantee a remote run has completed.
+
+## Production email callback fix, 31 October 2026
+
+Added explicit standard Supabase PKCE code callbacks for signup and recovery, alongside existing token-hash support. Three new regression tests cover redirect origins, callback parsing and successful/failed provider exchange. The 35-test suite and configured build pass locally. Actual delivery and end-to-end verification/reset remain pending the production Site URL and allowlist correction, deployment and fresh emails.

@@ -28,7 +28,7 @@ The app uses token-hash verification links and does not automatically process ar
 >
 ```
 
-These templates are required for the implemented flow. The app consumes the token with `verifyOtp` after the user presses the confirmation button. Fragments are not sent to Netlify in the HTTP request. Never put analytics scripts on these pages.
+These templates support token-hash links across browsers. Standard Supabase PKCE emails are also supported by the explicit callback flow, but must be opened in the same browser that requested them. The app consumes the token with `verifyOtp` after the user presses the confirmation button. Fragments are not sent to Netlify in the HTTP request. Never put analytics scripts on these pages.
 
 Configure session lifetime and inactivity settings according to the selected Supabase plan. The app does not claim a fixed eight-hour or 30-minute timeout. Account suspension and access changes block existing app sessions immediately through the database profile check; refreshing the same old Supabase session does not undo that revocation.
 
@@ -101,3 +101,16 @@ The migration filenames match the versions recorded by the connected migration t
 `SUPABASE_URL` is an HTTPS project origin, not a credential. Its value intentionally also appears in the public Vite client, generated CSP and staging documentation. `netlify.toml` omits only this variable name from value-based secret scanning to avoid a false positive. Secret scanning stays enabled for Meta and Supabase secret keys. Never place a database connection string, password or key in `SUPABASE_URL`.
 
 If a site-level `SECRETS_SCAN_OMIT_KEYS` value overrides the repository setting, include `SUPABASE_URL` in that list. Do not disable scanning or exclude the build directory. Redeploy the latest main commit after this configuration change.
+
+## Production email redirects
+
+For FarmRelay, Supabase Authentication URL Configuration must contain:
+
+- Site URL: `https://farmrelay.netlify.app`
+- Redirect URLs: `https://farmrelay.netlify.app/` and `https://farmrelay.netlify.app/**`
+
+Remove localhost from the production project redirect allowlist. Use a separate development project if local redirects are required. The frontend requests `/?auth_action=signup` for signup/resend and `/?auth_action=recovery` for password reset. An unapproved redirect falls back to the configured Site URL, so leaving Site URL as localhost breaks production emails even when the frontend uses the right origin.
+
+Default ConfirmationURL email templates use the explicit PKCE callback. The user presses Continue securely to exchange the code. The callback removes the code from the address bar and never enables automatic implicit token handling. PKCE links need the original requesting browser's stored verifier. Token-hash templates above remain supported for cross-browser use when custom SMTP/template editing is available.
+
+After changing URL settings, request a fresh email from the live site. Do not reuse an old localhost link or a consumed code. Test signup verification, password reset, expired links and MFA-protected recovery before announcing public availability. Verify the mail provider's delivery limits and custom SMTP configuration separately.
