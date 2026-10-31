@@ -1,4 +1,11 @@
 import { en } from "./i18n/en.js";
+// Keep HTTP status when wrapping SDK errors. Supabase treats 5xx as retryable
+// and may omit the provider error code for those responses.
+export function authErrorStatus(error, code = error?.code) {
+  if (code === "AUTH_REQUIRED") return 401;
+  if (code === "42501") return 403;
+  return error?.status || 400;
+}
 export function friendlyAuthError(error) {
   const code = error?.code || "",
     status = error?.status;
@@ -11,6 +18,15 @@ export function friendlyAuthError(error) {
     ].includes(code)
   )
     return en.auth.signedOut;
+  if (
+    status >= 500 ||
+    [
+      "service_unavailable",
+      "server_credentials_invalid",
+      "origin_not_allowed",
+    ].includes(code)
+  )
+    return en.errors.config;
   if (code === "email_not_confirmed") return en.auth.unverified;
   if (code === "MFA_REQUIRED") return en.errors.mfa;
   if (status === 429 || /rate|over_.*limit/.test(code)) return en.errors.rate;

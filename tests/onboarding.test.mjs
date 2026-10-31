@@ -74,7 +74,7 @@ const env = {
   APP_ORIGIN: "https://farmrelay.test",
   SUPABASE_URL: "https://project.supabase.co",
   SUPABASE_PUBLISHABLE_KEY: "public",
-  SUPABASE_SECRET_KEY: "private",
+  SUPABASE_SECRET_KEY: "sb_secret_synthetic",
 };
 const request = (body) =>
   new Request("https://farmrelay.test/.netlify/functions/auth", {
@@ -275,4 +275,70 @@ test("gateway preserves unverified-login error codes for the Supabase SDK", asyn
     password: good.password,
   });
   assert.equal(error.code, "email_not_confirmed");
+});
+
+test("server rejects public keys in its secret variable before database or Auth calls", async () => {
+  const anonJwt =
+    "header." +
+    Buffer.from(JSON.stringify({ role: "anon" })).toString("base64url") +
+    ".signature";
+  for (const key of [
+    "sb_publishable_synthetic",
+    anonJwt,
+    "postgresql://not-an-api-key",
+    "invalid",
+  ]) {
+    let calls = 0;
+    const handler = createAuthHandler({
+      env: { ...env, SUPABASE_SECRET_KEY: key },
+      clientFactory: () => {
+        calls++;
+        throw Error("must not be called");
+      },
+    });
+    const response = await handler(request(payload), { ip: "192.0.2.1" });
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).code, "server_credentials_invalid");
+    assert.equal(calls, 0);
+  }
+});
+test("quota permission failures remain unavailable without widening public access", async () => {
+  const handler = createAuthHandler({
+    env,
+    clientFactory: () => ({
+      rpc: async () => ({
+        error: { code: "42501", message: "permission denied" },
+      }),
+    }),
+  });
+  const response = await handler(request(payload), { ip: "192.0.2.1" });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, "server_credentials_invalid");
+});
+test("SDK 503 errors keep their status through API wrapping and show a service message", async () => {
+  const { createClient } = await import("@supabase/supabase-js");
+  const { authErrorStatus, friendlyAuthError } =
+    await import("../src/auth-errors.js");
+  const { en } = await import("../src/i18n/en.js");
+  const client = createClient(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: async () =>
+        Response.json({ code: "server_credentials_invalid" }, { status: 503 }),
+    },
+  });
+  const { error } = await client.auth.signInWithPassword({
+    email: good.email,
+    password: good.password,
+  });
+  const wrapped = {
+    message: error.message,
+    code: error.code,
+    status: authErrorStatus(error),
+  };
+  assert.equal(wrapped.status, 503);
+  assert.equal(friendlyAuthError(wrapped), en.errors.config);
+  assert.equal(authErrorStatus({ status: 429 }), 429);
+  assert.equal(authErrorStatus({}, "AUTH_REQUIRED"), 401);
+  assert.equal(authErrorStatus({ status: 400 }, "AUTH_REQUIRED"), 401);
 });

@@ -14,6 +14,22 @@ const reply = (body, status = 200, extra = {}) =>
       ...extra,
     },
   });
+// Shape checks catch a publishable/anon key pasted into the server-only variable.
+// Supabase still verifies the credential; decoding a JWT here grants no access.
+function isServiceKey(key) {
+  if (typeof key !== "string") return false;
+  if (key.startsWith("sb_secret_")) return true;
+  try {
+    const parts = key.split(".");
+    return (
+      parts.length === 3 &&
+      JSON.parse(Buffer.from(parts[1], "base64url").toString()).role ===
+        "service_role"
+    );
+  } catch {
+    return false;
+  }
+}
 export function createAuthHandler({
   env = process.env,
   fetcher = fetch,
@@ -31,6 +47,8 @@ export function createAuthHandler({
       !context.ip
     )
       return reply({ code: "service_unavailable" }, 503);
+    if (!isServiceKey(env.SUPABASE_SECRET_KEY))
+      return reply({ code: "server_credentials_invalid" }, 503);
     try {
       const reader = request.body?.getReader();
       if (!reader) return reply({ code: "validation_failed" }, 400);
@@ -97,7 +115,9 @@ export function createAuthHandler({
           {
             code: limit.message?.includes("RATE_LIMIT")
               ? "over_request_rate_limit"
-              : "service_unavailable",
+              : limit.code === "42501" || limit.code === "PGRST301"
+                ? "server_credentials_invalid"
+                : "service_unavailable",
           },
           limit.message?.includes("RATE_LIMIT") ? 429 : 503,
           { "Retry-After": "60" },

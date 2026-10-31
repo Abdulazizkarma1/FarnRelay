@@ -69,3 +69,11 @@ Development-only packages add linting, browser tests, axe and Lighthouse. They a
 - Browser tests do not establish SMTP delivery, role approval operations or real Meta model access. Record hosted acceptance separately.
 
 The final isolated browser walkthrough passed signup, the actual resend cooldown, resend success feedback, explicit verification success, clean dashboard loading and logout. The temporary browser fixture entry was removed before commit.
+
+## Production signup troubleshooting
+
+A 503 from `/.netlify/functions/auth` before any Auth signup log can mean the service-only quota check failed. On 31 October the hosted Postgres logs reported `permission denied for function farmrelay_auth_limit`. The service_role grant and a rolled-back service_role invocation both passed. This indicates the deployed server credential is not acting as service_role. Do not grant the quota function to anon/authenticated to hide this configuration problem.
+
+In Netlify Environment variables, set `SUPABASE_SECRET_KEY` to a secret key from the same Supabase project, not its publishable/anon key or Postgres connection string. Select the **Production** context and **Functions** scope, then trigger a fresh production deploy. Prefer a modern `sb_secret_` key and enable the documented Auth IP forwarding. Public VITE variables stay separate. Never paste the secret in chat or commit it.
+
+The gateway now rejects public-key shapes in that variable before using the database. Permission failures are reported as a server credential problem. The API preserves SDK HTTP statuses so service outages show a service-unavailable message instead of generic validation feedback. Synthetic regression tests cover this exact path. A real signup/email check is still required after the deployment credential is corrected.

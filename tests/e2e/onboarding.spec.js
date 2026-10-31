@@ -245,3 +245,41 @@ test("password recovery gives a separate confirmation, then completes a new-pass
     }),
   ).toBeVisible();
 });
+
+test("signup service failure stays at the form with useful feedback and preserves entered fields", async ({
+  page,
+}) => {
+  await mockAuth(page);
+  await page.route("**/.netlify/functions/auth", (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ code: "server_credentials_invalid" }),
+    }),
+  );
+  await page.goto("/signup");
+  await page.getByLabel("Full name", { exact: true }).fill("Test Farmer");
+  await page
+    .getByLabel("Email address", { exact: true })
+    .fill("farmer@example.test");
+  await page
+    .getByLabel("Password", { exact: true })
+    .fill("A long field phrase 2026");
+  await page
+    .getByLabel("I agree to the terms and data notice", { exact: true })
+    .check();
+  await page
+    .getByRole("button", { name: "Create account", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Account service is unavailable.",
+  );
+  await expect(page.getByRole("alert")).toBeFocused();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveValue(
+    "A long field phrase 2026",
+  );
+  await expect(
+    page.getByRole("button", { name: "Create account", exact: true }),
+  ).toBeEnabled();
+  await expect(page).toHaveURL(/\/signup$/);
+});
