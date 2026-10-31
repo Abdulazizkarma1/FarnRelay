@@ -1,3 +1,4 @@
+import { authErrorStatus } from "./auth-errors.js";
 import { isReportDetailPath } from "./route-utils.js";
 import { en } from "./i18n/en.js";
 import { requestId } from "./id.js";
@@ -34,7 +35,7 @@ function check({ data, error }) {
           : error.code;
     throw new ApiError(
       error.message,
-      code === en.legacy.api_001 ? 401 : error.code === "42501" ? 403 : 400,
+      authErrorStatus(error, code),
       code,
     );
   }
