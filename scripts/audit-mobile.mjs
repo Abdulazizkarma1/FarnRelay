@@ -40,6 +40,7 @@ try {
     port: chrome.port,
     output: "json",
     logLevel: "error",
+    enableErrorReporting: false,
     onlyCategories: ["performance", "accessibility", "best-practices", "seo"],
   });
   await mkdir("artifacts", { recursive: true });
