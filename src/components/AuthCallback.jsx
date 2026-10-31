@@ -1,69 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { api } from "../api.js";
-import AuthScreen from "./AuthScreen.jsx";
-import "./AuthCallback.css";
-export default function AuthCallback({ callback, onAuthenticated }) {
-  const [busy, setBusy] = useState(false),
-    [error, setError] = useState(callback.error),
-    [done, setDone] = useState(false),
-    [recovery, setRecovery] = useState("");
-  useEffect(() => {
-    history.replaceState(null, "", location.pathname + "#email-callback");
-  }, []);
-  async function confirm() {
-    setBusy(true);
-    setError("");
-    try {
-      const r = await api("/auth/callback", {
-        method: "POST",
-        body: { code: callback.code, action: callback.action },
-      });
-      if (r.recoveryToken) setRecovery(r.recoveryToken);
-      else setDone(true);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  if (recovery)
-    return (
-      <AuthScreen
-        mode="reset"
-        token={recovery}
-        onAuthenticated={onAuthenticated}
-      />
-    );
-  return (
-    <main className="auth-callback">
-      <a href="#about">FarmRelay</a>
-      <p className="eyebrow">YOUR ACCOUNT</p>
-      <h1>
-        {done
-          ? "Email verified."
-          : callback.action === "recovery"
-            ? "Reset your password."
-            : "Confirm your email."}
-      </h1>
-      <p>
-        {done
-          ? "You can now sign in to your FarmRelay account."
-          : "Continue to securely complete the email link. Use the same browser where you requested it."}
-      </p>
-      {error && (
-        <p role="alert" className="error-notice">
-          {error}
-        </p>
-      )}
-      {!done && !callback.error && (
-        <button className="button primary" disabled={busy} onClick={confirm}>
-          {busy ? "Checking link..." : "Continue securely"}
-        </button>
-      )}
-      <a className="button outline" href="#login">
-        Go to sign in
-      </a>
-      <a href="#forgot">Request a new password reset</a>
-    </main>
-  );
+import React,{useEffect,useRef,useState} from 'react';
+import {api,navigate} from '../api.js';
+import {clearPending,getPending,savePending} from '../auth-state.js';
+import {friendlyAuthError} from '../auth-errors.js';
+import {en} from '../i18n/en.js';
+import AuthScreen from './AuthScreen.jsx';
+import AuthLayout from './AuthLayout.jsx';
+import {Alert,Button} from './Primitives.jsx';
+import './AuthCallback.css';
+export default function AuthCallback({callback,token,onAuthenticated,onVerified}) {
+ const [busy,setBusy]=useState(false),[error,setError]=useState(callback?.error?en.errors.expired:''),[done,setDone]=useState(false),[recovery,setRecovery]=useState(''),[verifiedUser,setVerifiedUser]=useState(null);const lock=useRef(false),alert=useRef();
+ useEffect(()=>{history.replaceState(null,'','/auth/verified');},[]);
+ useEffect(()=>{if(error)alert.current?.focus();},[error]);
+ async function confirm(){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const result=await api(token?'/auth/verify':'/auth/callback',{method:'POST',body:token?{token}:{code:callback.code,action:callback.action}});if(result.recoveryToken)setRecovery(result.recoveryToken);else{clearPending();setVerifiedUser(result.user||null);setDone(true);onVerified?.();}}catch(e){setError(friendlyAuthError(e));}finally{lock.current=false;setBusy(false);}}
+ if(recovery)return <AuthScreen mode="reset" token={recovery} onAuthenticated={onAuthenticated}/>;
+ return <AuthLayout title={done?en.auth.verifiedTitle:callback?.action==='recovery'?en.auth.resetTitle:en.auth.callbackTitle} description={done?en.auth.verifiedDescription:en.auth.callbackDescription}>
+ {error&&<Alert ref={alert}>{error}<p>{en.auth.linkHelp}</p></Alert>}
+ {done?<Button onClick={()=>verifiedUser?onAuthenticated(verifiedUser):navigate('login')}>{verifiedUser?en.auth.continueDashboard:en.auth.login}</Button>:(!callback?.error&&(token||callback?.code))&&<Button loading={busy} onClick={confirm}>{busy?en.auth.verifying:en.auth.callbackAction}</Button>}
+ {!done&&<div className="callback-options"><Button variant="secondary" onClick={()=>{if(getPending())navigate('verify-email');else navigate('signup');}}>{en.auth.requestNew}</Button><a href="/login">{en.auth.alreadyVerified}</a><a href="/forgot-password">{en.auth.forgot}</a></div>}
+ </AuthLayout>;
 }

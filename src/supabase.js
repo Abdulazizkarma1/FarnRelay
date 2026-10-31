@@ -1,3 +1,4 @@
+import { createAuthFetch } from "./auth-fetch.js";
 import { createClient } from "@supabase/supabase-js";
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -8,6 +9,7 @@ export function getSupabase() {
       "Supabase is not configured. Add the project URL and publishable key in Netlify, then rebuild.",
     );
   return (client ||= createClient(url, key, {
+    global: {fetch:createAuthFetch()},
     auth: {
       persistSession: true,
       autoRefreshToken: true,

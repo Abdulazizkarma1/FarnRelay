@@ -1,3 +1,7 @@
+import { en } from "./i18n/en.js";
+import { savePending } from "./auth-state.js";
+import VerifyEmail from "./components/VerifyEmail.jsx";
+import InfoPage from "./components/InfoPage.jsx";
 import { readAuthCallback } from "./auth-links.js";
 import AuthCallback from "./components/AuthCallback.jsx";
 import { getSupabase } from "./supabase.js";
@@ -31,10 +35,10 @@ function route() {
   const callback = readAuthCallback(location.href);
   if (callback)
     return { path: "email-callback", params: new URLSearchParams(), callback };
-  const raw = location.hash.slice(1).replace(/^\//, "");
+  const raw = location.hash.slice(1).replace(/^\//, "") || location.pathname.replace(/^\//, "");
   const [path, query] = raw.split("?");
   return {
-    path: path || "dashboard",
+    path: ({signup:"register","forgot-password":"forgot"})[path] || path || "about",
     params: new URLSearchParams(query || ""),
   };
 }
@@ -47,7 +51,7 @@ export default function App() {
   function loggedOut() {
     setUser(null);
     setCsrf("");
-    setNotice("");
+    setNotice(en.auth.signedOut);
     navigate("login");
   }
   async function boot() {
@@ -56,7 +60,8 @@ export default function App() {
     try {
       const data = await api("/auth/me");
       setUser(data.user);
-      if (data.user.role === "admin" && !data.user.mfaEnabled)
+      if (!data.user.verified) {savePending(data.user.email,{sent:false});navigate("verify-email");}
+      else if (!current.callback && data.user.role === "admin" && !data.user.mfaEnabled)
         navigate("account");
     } catch (e) {
       if (e.status !== 401) setConnectionError(e.message);
@@ -73,6 +78,7 @@ export default function App() {
           clearMedia();
           loggedOut();
         }
+        if (["SIGNED_IN","USER_UPDATED","TOKEN_REFRESHED"].includes(event)) setTimeout(()=>{api("/auth/me").then(d=>setUser(d.user)).catch(()=>{});},0);
         if (event === "SIGNED_IN")
           setUser((previous) => {
             if (previous && previous.id !== session?.user.id) {
@@ -89,19 +95,25 @@ export default function App() {
       window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", update);
+    window.addEventListener("popstate", update);
     window.addEventListener("farmrelay:session-expired", loggedOut);
     return () => {
       subscription?.unsubscribe();
       window.removeEventListener("hashchange", update);
+      window.removeEventListener("popstate", update);
       window.removeEventListener("farmrelay:session-expired", loggedOut);
     };
   }, []);
   function authenticated(u) {
     setUser(u);
     setConnectionError("");
+    if(!u.verified){savePending(u.email,{sent:false});navigate("verify-email");return;}
     navigate(u.role === "admin" && !u.mfaEnabled ? "account" : "dashboard");
   }
   const [page, id] = current.path.split("/");
+  useEffect(()=>{
+    if(!loading&&!user&&["dashboard","reports","new","drafts","account","notifications","users","audit"].includes(page))navigate("login");
+  },[page,loading,user]);
   if (current.callback)
     return (
       <AuthCallback
@@ -109,7 +121,7 @@ export default function App() {
         onAuthenticated={authenticated}
       />
     );
-  if (page === "about" || (!user && !loading && !location.hash))
+  if (page === "about")
     return (
       <Suspense fallback={<Loading />}>
         <AboutPage />
@@ -124,7 +136,11 @@ export default function App() {
         </Suspense>
       </main>
     );
-  if (["verify", "reset"].includes(page))
+  if(page==="verify-email")return <VerifyEmail onAuthenticated={authenticated}/>;
+  if(page==="terms")return <InfoPage kind="terms"/>;
+  if(page==="verify")return <AuthCallback key={current.path} token={current.params.get("token")} onAuthenticated={authenticated} onVerified={()=>{api("/auth/me").then(d=>setUser(d.user)).catch(()=>{});}}/>;
+  if(page==="auth"&&id==="verified")return <AuthCallback callback={{error:true}} onAuthenticated={authenticated}/>;
+  if (["reset"].includes(page))
     return (
       <AuthScreen
         key={current.path}
@@ -140,6 +156,7 @@ export default function App() {
       />
     );
   if (loading) return <Loading text="Opening FarmRelay..." />;
+  if (!user && !["login","register","forgot"].includes(page))return <InfoPage kind="404"/>;
   if (!user)
     return (
       <>
@@ -158,6 +175,7 @@ export default function App() {
         />
       </>
     );
+  if(!user.verified)return <VerifyEmail onAuthenticated={authenticated}/>;
   let content;
   if (page === "evaluation") content = <EvaluationPage />;
   else if (page === "account")
@@ -183,10 +201,7 @@ export default function App() {
     content = <Dashboard user={user} />;
   else
     content = (
-      <Empty
-        title="This page is not available."
-        description="Use the workspace navigation to continue."
-      />
+      <InfoPage kind="404"/>
     );
   return (
     <AppShell key={user.id} user={user} page={page} onLogout={loggedOut}>

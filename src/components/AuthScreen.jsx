@@ -1,248 +1,52 @@
-import React, { useState } from "react";
-import { api, navigate } from "../api.js";
-import { ErrorNotice } from "./UI.jsx";
-import Icon from "./Icon.jsx";
-import "./AuthScreen.css";
-export default function AuthScreen({
-  mode = "login",
-  token,
-  onAuthenticated,
-  onVerified,
-}) {
-  const [form, setForm] = useState({
-      name: "",
-      email: "",
-      password: "",
-      community: "",
-      otp: "",
-    }),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [message, setMessage] = useState(""),
-    [mfa, setMfa] = useState(false);
-  const change = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const titles = {
-    login: "Welcome back.",
-    register: "A better connection\nto your farm.",
-    forgot: "Let’s get you back in.",
-    reset: "Choose a new password.",
-    verify: "Verify your email.",
-  };
-  async function submit(e) {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    setMessage("");
-    try {
-      let body;
-      if (mode === "login")
-        body = {
-          email: form.email,
-          password: form.password,
-          ...(mfa ? { otp: form.otp } : {}),
-        };
-      else if (mode === "register")
-        body = {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          community: form.community,
-        };
-      else if (mode === "forgot") body = { email: form.email };
-      else if (mode === "reset")
-        body = { token, password: form.password, otp: form.otp };
-      else body = { token };
-      const result = await api("/auth/" + mode, { method: "POST", body });
-      if (result.user) onAuthenticated(result.user);
-      else {
-        setMessage(result.message);
-        if (mode === "verify") onVerified?.();
-      }
-    } catch (e) {
-      setError(e.message);
-      if (e.code === "MFA_REQUIRED") setMfa(true);
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div className="auth-page">
-      <section className="auth-story">
-        <img src="/images/landscape.svg" alt="Green fields in morning light" />
-        <div className="auth-overlay" />
-        <a href="#login" className="auth-brand">
-          <span>
-            <Icon name="leaf" size={25} />
-          </span>
-          FarmRelay
-        </a>
-        <div className="auth-story-copy">
-          <span className="auth-kicker">CLOSER TO THE FIELD</span>
-          <h1>
-            Every farm
-            <br />
-            has a story.
-            <br />
-            <em>Let’s listen.</em>
-          </h1>
-          <p>
-            One place for field observations, trusted extension support and
-            thoughtful follow-up.
-          </p>
-          <div className="auth-story-tags">
-            <span>Photo & voice reports</span>
-            <span>Human-led guidance</span>
-          </div>
-        </div>
-        <small className="auth-credit">Illustrative farmland photography</small>
-      </section>
-      <section className="auth-panel">
-        <div className="auth-top">
-          <span>FARMER & EXTENSION WORKSPACE</span>
-          <Icon name="leaf" />
-        </div>
-        <div className="auth-form-wrap">
-          <p className="eyebrow">
-            {mode === "register"
-              ? "START WITH YOUR FIELD"
-              : mode === "login"
-                ? "YOUR WORKSPACE AWAITS"
-                : "ACCOUNT SECURITY"}
-          </p>
-          <h2>{titles[mode] || titles.login}</h2>
-          <p className="auth-description">
-            {mode === "register"
-              ? "Create a farmer account. Officer access is granted by an administrator."
-              : mode === "login"
-                ? "Sign in to pick up where you left off."
-                : mode === "verify"
-                  ? "Confirm this email address to start sending reports."
-                  : "Use your registered email and keep your account secure."}
-          </p>
-          <ErrorNotice error={error} />
-          {message && (
-            <div className="success-notice" role="status">
-              {message}
-            </div>
-          )}
-          <form onSubmit={submit}>
-            {mode === "register" && (
-              <>
-                <label>
-                  Full name
-                  <input
-                    required
-                    minLength={2}
-                    autoComplete="name"
-                    maxLength={100}
-                    value={form.name}
-                    onChange={(e) => change("name", e.target.value)}
-                  />
-                </label>
-                <label>
-                  Community
-                  <input
-                    maxLength={100}
-                    value={form.community}
-                    onChange={(e) => change("community", e.target.value)}
-                    placeholder="For example, Navrongo"
-                  />
-                </label>
-              </>
-            )}
-            {["login", "register", "forgot"].includes(mode) && (
-              <label>
-                Email address
-                <input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  maxLength={254}
-                  value={form.email}
-                  onChange={(e) => change("email", e.target.value)}
-                  placeholder="you@example.com"
-                />
-              </label>
-            )}
-            {["login", "register", "reset"].includes(mode) && (
-              <label>
-                Password
-                <input
-                  type="password"
-                  required
-                  minLength={mode === "login" ? 1 : 12}
-                  maxLength={128}
-                  autoComplete={
-                    mode === "login" ? "current-password" : "new-password"
-                  }
-                  value={form.password}
-                  onChange={(e) => change("password", e.target.value)}
-                />
-                {mode !== "login" && (
-                  <small>
-                    Use at least 12 characters. A long, unique phrase works
-                    well.
-                  </small>
-                )}
-              </label>
-            )}
-            {mfa && (
-              <label>
-                Authenticator code
-                <input
-                  required
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]{6}"
-                  value={form.otp}
-                  maxLength={6}
-                  onChange={(e) => change("otp", e.target.value)}
-                />
-                <small>
-                  If you have lost your authenticator, contact your platform
-                  administrator for identity-verified recovery.
-                </small>
-              </label>
-            )}
-            {mode === "login" && (
-              <div className="auth-forgot">
-                <a href="#forgot">Forgot password?</a>
-              </div>
-            )}
-            <button
-              className="button primary auth-submit"
-              disabled={
-                busy || ((mode === "reset" || mode === "verify") && !token)
-              }
-            >
-              {busy
-                ? "Please wait..."
-                : {
-                    login: "Sign in",
-                    register: "Create account",
-                    forgot: "Send reset link",
-                    reset: "Save new password",
-                    verify: "Verify email",
-                  }[mode]}
-              <Icon name="arrow" size={18} />
-            </button>
-          </form>
-          <p className="auth-switch">
-            {mode === "login" ? (
-              <>
-                New to FarmRelay?{" "}
-                <a href="#register">Create a farmer account</a>
-              </>
-            ) : (
-              <a href="#login">Back to sign in</a>
-            )}
-          </p>
-        </div>
-        <div className="auth-bottom">
-          <Icon name="shield" size={16} />
-          <span>Private accounts. Human-reviewed feedback.</span>
-        </div>
-      </section>
-    </div>
-  );
+import React,{useRef,useState,useEffect} from 'react';
+import {api,navigate} from '../api.js';
+import {en} from '../i18n/en.js';
+import {validateAuth,passwordGuidance,normalizeEmail} from '../../shared/auth-validation.js';
+import {savePending,getPending,clientAttempt} from '../auth-state.js';
+import {friendlyAuthError} from '../auth-errors.js';
+import AuthLayout from './AuthLayout.jsx';
+import {Input,PasswordInput,Select,Checkbox,Button,Alert,Modal} from './Primitives.jsx';
+import './AuthScreen.css';
+export function LegalCopy(){return <div className="legal-copy"><p>{en.legal.intro}</p>{en.legal.sections.map(([title,body])=><section key={title}><h2>{title}</h2><p>{body}</p></section>)}<p>{en.legal.version}</p></div>;}
+export default function AuthScreen({mode='login',token,onAuthenticated,onVerified}) {
+ const kind=mode==='signup'?'register':mode;
+ const [form,setForm]=useState(()=>({name:'',email:getPending()?.email||'',password:'',role:getPending()?.role||'farmer',terms:false,otp:''}));
+ const [touched,setTouched]=useState({}),[errors,setErrors]=useState({}),[error,setError]=useState(''),[busy,setBusy]=useState(false),[slow,setSlow]=useState(false),[done,setDone]=useState(false),[mfa,setMfa]=useState(false),[unverified,setUnverified]=useState(false),[termsOpen,setTermsOpen]=useState(false);
+ const lock=useRef(false),summary=useRef();
+ useEffect(()=>{if(!busy){setSlow(false);return;}const id=setTimeout(()=>setSlow(true),7000);return()=>clearTimeout(id);},[busy]);
+ useEffect(()=>{if(error){summary.current?.focus();summary.current?.scrollIntoView({block:'center',behavior:'instant'});}},[error]);
+ function change(key,value){setForm(f=>({...f,[key]:value}));if(touched[key])setErrors(old=>({...old,[key]:validateAuth(kind,{...form,[key]:value})[key]}));}
+ function blur(key){setTouched(t=>({...t,[key]:true}));setErrors(old=>({...old,[key]:validateAuth(kind,form)[key]}));}
+ const field=key=>({id:`auth-${key}`,value:form[key],onChange:e=>change(key,e.target.value),onBlur:()=>blur(key),error:errors[key]?en.errors[errors[key]]:undefined});
+ async function submit(e){e.preventDefault();if(lock.current)return;const invalid=validateAuth(kind,form);setErrors(invalid);if(Object.keys(invalid).length){requestAnimationFrame(()=>{summary.current?.focus();summary.current?.scrollIntoView({block:'center'});});return;}
+  if(navigator.onLine===false){setError(en.common.offline);return;}
+  if(!clientAttempt(kind)){setError(en.errors.rate);return;}
+  lock.current=true;setBusy(true);setError('');setUnverified(false);
+  try {
+   const result=await api('/auth/'+kind,{method:'POST',body:{...form,email:normalizeEmail(form.email),token}});
+   if(kind==='register'){savePending(form.email,{role:form.role});setForm(f=>({...f,password:''}));navigate('verify-email');return;}
+   if(result.user){setForm(f=>({...f,password:''}));if(!result.user.verified){savePending(result.user.email,{sent:false});navigate('verify-email');}onAuthenticated?.(result.user);return;}
+   setForm(f=>({...f,password:''}));setDone(true);if(kind==='verify')onVerified?.();
+  } catch(e){setError(friendlyAuthError(e));if(e.code==='MFA_REQUIRED')setMfa(true);if(e.code==='email_not_confirmed'){setUnverified(true);savePending(form.email,{sent:false});}}
+  finally{lock.current=false;setBusy(false);}
+ }
+ const titles={register:en.auth.signupTitle,login:en.auth.loginTitle,forgot:en.auth.forgotTitle,reset:en.auth.resetTitle,verify:en.auth.callbackTitle};
+ const descriptions={register:en.auth.signupDescription,login:en.auth.loginDescription,forgot:en.auth.forgotDescription,reset:en.auth.resetDescription,verify:en.auth.callbackDescription};
+ const guide=passwordGuidance(form.password,form.email),hasEmail=['register','login','forgot'].includes(kind),hasPassword=['register','login','reset'].includes(kind);
+ if(done)return <AuthLayout title={kind==='forgot'?en.auth.resetSentTitle:kind==='reset'?en.auth.resetDone:en.auth.verifiedTitle} description={kind==='forgot'?en.auth.resetSent:en.auth.verifiedDescription}><a className="ds-button ds-primary" href="/login">{en.auth.login}</a>{kind==='forgot'&&<p className="ds-hint">{en.auth.verifyHint}</p>}</AuthLayout>;
+ return <AuthLayout title={titles[kind]||en.auth.loginTitle} description={descriptions[kind]}>
+ <form onSubmit={submit} noValidate aria-busy={busy}>
+ {(error||Object.values(errors).some(Boolean))&&<Alert ref={summary} className="ds-alert ds-alert-error account-server-error"><strong>{error||en.errors.summary}</strong>{Object.entries(errors).some(([,v])=>v)&&<ul className="account-error-list">{Object.entries(errors).filter(([,v])=>v).map(([key,value])=><li key={key}><button type="button" onClick={()=>document.getElementById(`auth-${key}`)?.focus()}>{en.errors[value]}</button></li>)}</ul>}{unverified&&<Button variant="secondary" onClick={()=>{setForm(f=>({...f,password:''}));navigate('verify-email');}}>{en.auth.resend}</Button>}</Alert>}
+ {kind==='register'&&<Input {...field('name')} label={en.auth.name} autoComplete="name" maxLength={100} required/>}
+ {hasEmail&&<Input {...field('email')} label={en.auth.email} type="email" inputMode="email" autoComplete="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} maxLength={254} required placeholder={en.auth.emailPlaceholder}/>}
+ {hasPassword&&<PasswordInput {...field('password')} label={kind==='reset'?en.auth.newPassword:en.auth.password} required maxLength={256} autoComplete={kind==='login'?'current-password':'new-password'} hint={kind==='login'?undefined:en.auth.passwordHint}/>}
+ {hasPassword&&kind!=='login'&&<div className="password-guidance"><label htmlFor="password-meter">{en.auth.strength}: {en.auth.levels[guide.level]}</label><meter id="password-meter" min={0} max={3} value={guide.level}/><ul><li>{guide.length>=15?'✓ ':''}{en.auth.passwordLength}</li><li>{guide.valid?'✓ ':''}{en.auth.passwordUnique}</li></ul><p>{en.auth.strengthNote}</p></div>}
+ {kind==='register'&&<><Select {...field('role')} label={en.auth.role} hint={en.auth.roleHint}><option value="farmer">{en.auth.farmer}</option><option value="officer">{en.auth.officer}</option></Select><Checkbox id="auth-terms" label={en.auth.terms} checked={form.terms} onChange={e=>change('terms',e.target.checked)} onBlur={()=>blur('terms')} error={errors.terms?en.errors[errors.terms]:undefined}/><button className="account-terms-button" type="button" onClick={()=>setTermsOpen(true)}>{en.auth.termsLink}</button></>}
+ {mfa&&<Input id="auth-otp" label={en.auth.otp} hint={en.auth.otpHelp} value={form.otp} onChange={e=>change('otp',e.target.value)} inputMode="numeric" autoComplete="one-time-code" maxLength={6} required/>}
+ {kind==='login'&&<a className="account-help" href="/forgot-password">{en.auth.forgot}</a>}
+ {(kind==='reset'||kind==='verify')&&!token?<Alert tone="info">{en.auth.noResetToken}<a href="/forgot-password">{en.auth.forgot}</a></Alert>:<Button type="submit" loading={busy}>{busy?({register:en.auth.creating,login:en.auth.signingIn,forgot:en.auth.sending,reset:en.auth.savingPassword,verify:en.auth.verifying})[kind]:({register:en.auth.signup,login:en.auth.login,forgot:en.auth.sendReset,reset:en.auth.savePassword,verify:en.auth.verifyAction})[kind]}</Button>}
+ <p className="account-slow" role="status">{slow?en.common.slow:''}</p>
+ </form><p className="account-links">{kind==='login'?<>{en.auth.newHere} <a href="/signup">{en.auth.createLink}</a></>:<>{en.auth.already} <a href="/login">{en.auth.login}</a></>}</p>
+ <Modal open={termsOpen} title={en.legal.title} onClose={()=>setTermsOpen(false)}><LegalCopy/></Modal>
+ </AuthLayout>;
 }

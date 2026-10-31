@@ -1,3 +1,4 @@
+import {en} from "../i18n/en.js";
 import React, { useEffect, useRef, useState } from "react";
 import { api, navigate } from "../api.js";
 import {
@@ -238,7 +239,7 @@ export default function AdminPage({ user, mode }) {
         {selected && (
           <>
             <h2>{selected.name}</h2>
-            <p>{selected.email}</p>
+            <p>{selected.email}</p>{selected.requestedRole==="officer"&&selected.role==="farmer"&&<p>{en.auth.officerRequested}</p>}
             <ErrorNotice error={error} />
             <form onSubmit={save}>
               <label>

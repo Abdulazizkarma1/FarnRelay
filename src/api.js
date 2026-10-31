@@ -1,3 +1,4 @@
+import { validateAuth,normalizeEmail,TERMS_VERSION } from "../shared/auth-validation.js";
 import { authRedirect, exchangeEmailCode } from "./auth-links.js";
 import { getSupabase } from "./supabase.js";
 export class ApiError extends Error {
@@ -81,12 +82,13 @@ async function auth(path, body = {}) {
     case "/auth/me":
       return me();
     case "/auth/register": {
+      if(Object.keys(validateAuth("register",body)).length) throw new ApiError("Invalid registration.",400,"validation_failed");
       check(
         await db.auth.signUp({
-          email: body.email,
+          email: normalizeEmail(body.email),
           password: body.password,
           options: {
-            data: { name: body.name, community: body.community },
+            data: { name: body.name.trim(), requested_role:body.role, terms_version:TERMS_VERSION, terms_accepted_at:new Date().toISOString() },
             emailRedirectTo: authRedirect(location.origin, "signup"),
           },
         }),
@@ -98,7 +100,7 @@ async function auth(path, body = {}) {
     case "/auth/login": {
       check(
         await db.auth.signInWithPassword({
-          email: body.email,
+          email: normalizeEmail(body.email),
           password: body.password,
         }),
       );
@@ -122,13 +124,13 @@ async function auth(path, body = {}) {
         recoveryToken = crypto.randomUUID();
         return { recoveryToken };
       }
-      check(await db.auth.signOut({ scope: "local" }));
-      return { message: "Email verified. You can now sign in." };
+      return { message: "Email verified. You can now sign in.", ...(await rpc("/auth/me")) };
     }
     case "/auth/verify":
       check(await db.auth.verifyOtp({ token_hash: body.token, type: "email" }));
-      return { message: "Email verified. You can now sign in." };
+      return { message: "Email verified. You can now sign in.", ...(await rpc("/auth/me")) };
     case "/auth/reset": {
+      if(Object.keys(validateAuth("reset",body)).length)throw new ApiError("Invalid password.",400,"validation_failed");
       if (recoveryToken !== body.token) {
         check(
           await db.auth.verifyOtp({ token_hash: body.token, type: "recovery" }),
@@ -151,6 +153,10 @@ async function auth(path, body = {}) {
       check(await db.auth.signOut({ scope: "global" }));
       clearMedia();
       return { message: "Signed out on all devices." };
+    case "/auth/resend-public": {
+      check(await db.auth.resend({type:"signup",email:normalizeEmail(body.email),options:{emailRedirectTo:authRedirect(location.origin,"signup")}}));
+      return {message:"Verification email requested."};
+    }
     case "/auth/resend": {
       const { user } = check(await db.auth.getUser());
       check(
@@ -347,6 +353,9 @@ export async function api(path, { method = "GET", body, signal } = {}) {
   }
 }
 export const navigate = (path) => {
-  location.hash = path;
-  window.scrollTo({ top: 0, behavior: "instant" });
+ const routes={register:'/signup',signup:'/signup','verify-email':'/verify-email',login:'/login',forgot:'/forgot-password',terms:'/terms',about:'/about'};
+ const target=routes[path]||('/#'+path);
+ history.pushState(null,'',target);
+ window.dispatchEvent(new PopStateEvent('popstate'));
+ window.scrollTo({top:0,behavior:'instant'});
 };
