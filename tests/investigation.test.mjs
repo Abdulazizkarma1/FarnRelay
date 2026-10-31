@@ -360,7 +360,11 @@ test("server-side queues retain role scope and expose status events without inte
     0,
   );
 });
-function endpointFixture({ state = "complete", upstreamOk = true } = {}) {
+function endpointFixture({
+  state = "complete",
+  upstreamOk = true,
+  saveRejects = false,
+} = {}) {
   let paid = 0;
   const saves = [];
   const result = { brief };
@@ -379,10 +383,17 @@ function endpointFixture({ state = "complete", upstreamOk = true } = {}) {
     }),
   };
   const service = {
-    rpc: async (name, args) => {
-      saves.push(args);
-      return { data: null };
-    },
+    rpc: (name, args) => ({
+      // Match the real SDK builder: thenable, without a .catch method.
+      then(resolve, reject) {
+        saves.push(args);
+        return (
+          saveRejects
+            ? Promise.reject(Error("Persistence unavailable"))
+            : Promise.resolve({ data: null })
+        ).then(resolve, reject);
+      },
+    }),
   };
   const handler = createInvestigationHandler({
     env: {
@@ -474,4 +485,14 @@ test("visible claims require photos actually sent to the model", () => {
       ),
     /supplied photos/,
   );
+});
+
+test("AI failure cleanup accepts SDK thenables and preserves the original error even if persistence rejects", async () => {
+  const f = endpointFixture({ upstreamOk: false, saveRejects: true });
+  const response = await f.handler(f.request());
+  assert.equal(response.status, 502);
+  const body = await response.json();
+  assert.match(body.error, /Meta.*HTTP 503/);
+  assert.equal(body.errorType, undefined);
+  assert.equal(f.saves[0].p_result, null);
 });
