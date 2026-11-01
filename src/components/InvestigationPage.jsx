@@ -394,6 +394,13 @@ export default function InvestigationPage({ id, user }) {
                             ))
                         : photoElement(active)}
                     </div>
+                    {segment?.evidenceId === active.id && (
+                      <p className="capture-note" role="status">
+                        {segment.boxes?.length
+                          ? en.ai.regionsFound(segment.boxes.length)
+                          : en.ai.regionsEmpty}
+                      </p>
+                    )}
                     <div className="evidence-thumbnails">
                       {photos.map((e) => (
                         <button

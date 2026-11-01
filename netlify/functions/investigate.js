@@ -154,7 +154,9 @@ export function createInvestigationHandler({
           await service.rpc("farmrelay_finish_analysis", {
             p_run_id: runId,
             p_result: null,
-            p_error: "Analysis could not complete. Retry available.",
+            p_error: e.status
+              ? e.message.slice(0, 300)
+              : "Analysis could not complete. Retry available.",
           });
         } catch {}
       }
