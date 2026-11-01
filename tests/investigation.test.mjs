@@ -444,7 +444,7 @@ test("upstream failures record a retryable failed run without invented output", 
   const f = endpointFixture({ upstreamOk: false });
   assert.equal((await f.handler(f.request())).status, 502);
   assert.equal(f.saves[0].p_result, null);
-  assert.match(f.saves[0].p_error, /Retry/);
+  assert.match(f.saves[0].p_error, /HTTP 503/);
 });
 
 test("cached analysis never exposes stored session or access-version fields", async () => {

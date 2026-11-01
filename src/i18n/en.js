@@ -1,6 +1,12 @@
 // English source catalogue. Keep backend role/status identifiers untranslated.
 export const en = {
   brand: "FarmRelay",
+  ai: {
+    regionsFound: (count) =>
+      `SAM marked ${count} leaf region${count === 1 ? "" : "s"}. These are image regions, not a disease diagnosis.`,
+    regionsEmpty:
+      "SAM did not find a matching leaf region in this photo. Try a clearer close-up with one leaf. This is not a disease result.",
+  },
   common: {
     skip: "Skip to main content",
     loading: "Please wait...",
